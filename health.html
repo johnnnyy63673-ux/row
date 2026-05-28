@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#050506">
 <meta name="color-scheme" content="dark">
 <title>Daily Stack — Customizable Template</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="sync.js" defer></script>
 <script src="topbar.js" defer></script>
 <style>
 :root {
@@ -448,6 +450,57 @@ main {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.15); }
+
+/* ===== WATER SECTION ===== */
+.w-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.w-counter-row { display: flex; align-items: baseline; gap: 8px; margin: 6px 0 14px; }
+.w-big { font-size: 52px; font-weight: 800; letter-spacing: -0.035em; line-height: 1; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.w-target { font-size: 19px; color: var(--text-tertiary); font-weight: 500; }
+.w-progress-fill { height: 100%; background: linear-gradient(90deg, #7DD3FC, #6EE7B7); border-radius: 999px; transition: width 0.4s ease; box-shadow: 0 0 12px rgba(125,211,252,0.25); }
+.w-action-row { display: grid; grid-template-columns: 50px 1fr; gap: 8px; margin-bottom: 10px; }
+.w-minus { background: rgba(255,255,255,0.05); border: 1px solid var(--border-strong); border-radius: 10px; color: var(--text-primary); font-size: 22px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background 0.15s; }
+.w-minus:disabled { opacity: 0.3; cursor: not-allowed; }
+.w-minus:hover:not(:disabled) { background: rgba(255,255,255,0.09); }
+.w-plus { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.85); background: linear-gradient(180deg, #FFFFFF 0%, #E8E5DD 100%); color: #0A0A0B; font-weight: 700; cursor: pointer; font-family: inherit; transition: transform 0.12s; box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.30); }
+.w-plus:hover { transform: translateY(-1px); }
+.w-plus:active { transform: scale(0.97); }
+.w-status { text-align: center; font-size: 12px; color: var(--text-tertiary); font-style: italic; margin-bottom: 12px; }
+.w-status.good { color: #6EE7B7; font-style: normal; }
+.w-gear { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-tertiary); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 15px; transition: background 0.15s; }
+.w-gear:hover { background: rgba(255,255,255,0.08); }
+.w-why-btn { width: 100%; background: transparent; border: 1px solid var(--border); color: var(--text-secondary); border-radius: 10px; padding: 10px 14px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 600; text-align: left; display: flex; align-items: center; justify-content: space-between; transition: background 0.15s; }
+.w-why-btn:hover { background: rgba(255,255,255,0.04); }
+.w-why-arrow { transition: transform 0.2s; }
+.w-why-body { display: none; margin-top: 8px; padding: 13px 15px; background: rgba(255,255,255,0.025); border: 1px solid var(--border-soft); border-radius: 10px; }
+.w-why-body.open { display: block; }
+.w-why-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; font-variant-numeric: tabular-nums; }
+.w-why-row .wl { color: var(--text-secondary); }
+.w-why-row .wv { color: var(--text-primary); font-weight: 600; font-family: var(--font-mono); }
+.w-why-row.wt { border-top: 1px solid var(--border-soft); margin-top: 8px; padding-top: 10px; }
+.w-why-row.wt .wl { color: #6EE7B7; font-weight: 700; }
+.w-why-row.wt .wv { color: #6EE7B7; }
+.w-hist-row { display: grid; grid-template-columns: 58px 1fr auto; gap: 10px; padding: 7px 0; align-items: center; border-bottom: 1px solid var(--border-soft); }
+.w-hist-row:last-child { border-bottom: none; }
+.w-hist-date { font-size: 10px; color: var(--text-tertiary); font-family: var(--font-mono); }
+.w-hist-bar-wrap { height: 5px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; }
+.w-hist-bar-fill { height: 100%; background: linear-gradient(90deg, #7DD3FC, #6EE7B7); border-radius: 3px; }
+.w-hist-bar-fill.miss { background: rgba(255,138,138,0.35); }
+.w-hist-count { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); }
+.w-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 200; align-items: flex-end; justify-content: center; }
+.w-modal-bg.show { display: flex; }
+.w-modal { width: 100%; max-width: 720px; background: #111113; border: 1px solid rgba(255,255,255,0.10); border-radius: 20px 20px 0 0; padding: 12px 20px max(32px, env(safe-area-inset-bottom, 32px)); max-height: 80vh; overflow-y: auto; }
+.w-modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.16); border-radius: 999px; margin: 0 auto 18px; }
+.w-modal-title { font-size: 18px; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.018em; }
+.w-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+.w-label { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
+.w-field input[type="number"] { background: var(--bg-input); border: 1px solid var(--border-strong); color: var(--text-primary); font-family: inherit; font-size: 14px; padding: 10px 12px; border-radius: 10px; outline: none; -moz-appearance: textfield; }
+.w-field input[type="number"]::-webkit-outer-spin-button, .w-field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.w-field input:focus { border-color: rgba(125,211,252,0.40); }
+.w-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.w-seg { display: flex; gap: 3px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px; padding: 3px; }
+.w-seg button { flex: 1; padding: 8px 4px; border: none; background: transparent; color: var(--text-tertiary); border-radius: 7px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.12s; }
+.w-seg button.active { background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; }
+.w-modal-done { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.40); }
 </style>
 </head>
 <body>
@@ -492,6 +545,95 @@ main {
         </select>
         <button id="stackAddBtn" class="stack-add-btn">+ Add</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ====== WATER ====== -->
+  <div style="margin-top: 24px;" id="water">
+    <div class="section-title">Water</div>
+    <div class="stack-card">
+      <div class="w-section-head">
+        <div class="sf-eyebrow">Daily intake</div>
+        <button class="w-gear" id="wGear" aria-label="Water settings">⚙</button>
+      </div>
+
+      <div class="w-counter-row">
+        <span class="w-big" id="wNum">0</span>
+        <span class="w-target" id="wTarget">/ 9 bottles</span>
+      </div>
+
+      <div class="stack-progress-track" style="margin: 0 0 16px;">
+        <div class="w-progress-fill" id="wBar" style="width:0%"></div>
+      </div>
+
+      <div class="w-action-row">
+        <button class="w-minus" id="wMinus" disabled>−</button>
+        <button class="w-plus" id="wPlus">
+          <span id="wPlusLabel">Drank a bottle</span> ↑
+        </button>
+      </div>
+
+      <div class="w-status" id="wStatus">Start the day — first one in.</div>
+
+      <button class="w-why-btn" id="wWhyBtn" aria-expanded="false">
+        <span>Why this target?</span>
+        <span class="w-why-arrow" id="wWhyArrow">▾</span>
+      </button>
+      <div class="w-why-body" id="wWhyBody"></div>
+
+      <div class="sf-eyebrow" style="margin-top: 20px; margin-bottom: 10px;">Last 7 days</div>
+      <div id="wHist"></div>
+    </div>
+  </div>
+
+  <!-- Water settings modal -->
+  <div class="w-modal-bg" id="wModalBg">
+    <div class="w-modal">
+      <div class="w-modal-handle"></div>
+      <div class="w-modal-title">Water Settings</div>
+
+      <div class="w-field">
+        <div class="w-label">Show water as</div>
+        <div class="w-seg" id="wUnitSeg">
+          <button data-u="bottle">Bottles</button>
+          <button data-u="glass">Glasses</button>
+          <button data-u="oz">fl oz</button>
+          <button data-u="ml">ml</button>
+        </div>
+      </div>
+
+      <div class="w-field-row">
+        <div class="w-field">
+          <div class="w-label">Bottle size (ml)</div>
+          <input type="number" id="wBottleMl" min="100" max="2000" step="50">
+        </div>
+        <div class="w-field">
+          <div class="w-label">Glass size (ml)</div>
+          <input type="number" id="wGlassMl" min="100" max="500" step="10">
+        </div>
+      </div>
+
+      <div class="w-field-row">
+        <div class="w-field">
+          <div class="w-label">Weight (lb)</div>
+          <input type="number" id="wWeight" min="66" max="660" step="1">
+        </div>
+        <div class="w-field">
+          <div class="w-label">Activity (hrs/week)</div>
+          <input type="number" id="wActivity" min="0" max="40" step="0.5">
+        </div>
+      </div>
+
+      <div class="w-field">
+        <div class="w-label">Sex</div>
+        <div class="w-seg" id="wSexSeg">
+          <button data-s="m">Male</button>
+          <button data-s="f">Female</button>
+          <button data-s="o">Other</button>
+        </div>
+      </div>
+
+      <button class="w-modal-done" id="wModalDone">Done</button>
     </div>
   </div>
 
@@ -1012,6 +1154,190 @@ main {
   render();
   startTicker();
 })();
+
+// ====== WATER ======
+(() => {
+  'use strict';
+
+  const LS_KEY = 'po_water_v1';
+
+  function loadState() {
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) return normalize(JSON.parse(raw)); } catch (e) {}
+    return normalize({});
+  }
+  function normalize(s) {
+    s = s || {};
+    s.unit       = s.unit       || 'bottle';
+    s.bottleMl   = s.bottleMl   || 500;
+    s.glassMl    = s.glassMl    || 250;
+    s.weightUnit = s.weightUnit || 'lb';
+    s.profile    = Object.assign({ weightKg: 75, age: 25, sex: 'm', activityHrsPerWeek: 5 }, s.profile || {});
+    s.caffeineMgPerDay = s.caffeineMgPerDay != null ? s.caffeineMgPerDay : 200;
+    s.substances = Array.isArray(s.substances) ? s.substances : [];
+    s.logs       = (s.logs && typeof s.logs === 'object') ? s.logs : {};
+    return s;
+  }
+  function saveState() { try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {} }
+
+  let state = loadState();
+
+  function dateKey(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); }
+  function todayKey()  { return dateKey(new Date()); }
+  function todayCount() { return state.logs[todayKey()] || 0; }
+  function setTodayCount(n) {
+    const k = todayKey();
+    if (n <= 0) delete state.logs[k]; else state.logs[k] = n;
+    saveState();
+  }
+
+  function unitVolMl()    { return state.unit === 'bottle' ? state.bottleMl : state.unit === 'glass' ? state.glassMl : state.unit === 'oz' ? 30 : 1; }
+  function unitSingular() { return state.unit === 'bottle' ? 'bottle' : state.unit === 'glass' ? 'glass' : state.unit === 'oz' ? 'oz' : 'ml'; }
+  function unitPlural()   { return state.unit === 'bottle' ? 'bottles' : state.unit === 'glass' ? 'glasses' : state.unit === 'oz' ? 'oz' : 'ml'; }
+  function fmtMl(ml)      { return ml >= 1000 ? (ml/1000).toFixed(1) + ' L' : Math.round(ml) + ' ml'; }
+
+  function computeTarget() {
+    const p    = state.profile;
+    const wKg  = state.weightUnit === 'lb' ? p.weightKg / 2.20462 : p.weightKg;
+    const base = wKg * 35;
+    const exercise = (p.activityHrsPerWeek || 0) / 7 * 500;
+    const caffeine = Math.max(0, (state.caffeineMgPerDay || 0) - 200) * 1.5;
+    const subs     = (state.substances || []).reduce((s, x) => {
+      const dose = (x.dose != null ? x.dose : x.defaultDose) || 0;
+      return s + Math.max(0, dose * (x.mlPerUnit || 0));
+    }, 0);
+    let adjust = 0;
+    if (p.sex === 'm') adjust += 200;
+    if ((p.age || 0) >= 50) adjust += 100;
+    return { base, exercise, caffeine, subs, adjust, total: base + exercise + caffeine + subs + adjust };
+  }
+
+  function render() {
+    const calc = computeTarget();
+    const targetUnits = Math.ceil(calc.total / unitVolMl());
+    const count = todayCount();
+
+    document.getElementById('wNum').textContent    = count;
+    document.getElementById('wTarget').textContent = `/ ${targetUnits} ${unitPlural()}`;
+    document.getElementById('wPlusLabel').textContent = `Drank a ${unitSingular()}`;
+
+    const pct = targetUnits === 0 ? 0 : Math.min(100, (count / targetUnits) * 100);
+    document.getElementById('wBar').style.width = pct + '%';
+
+    const statusEl = document.getElementById('wStatus');
+    const ratio = targetUnits ? count / targetUnits : 0;
+    if      (count === 0) { statusEl.textContent = 'Start the day — first one in.';          statusEl.className = 'w-status'; }
+    else if (ratio < 0.5) { statusEl.textContent = 'Behind pace — drink one soon.';           statusEl.className = 'w-status'; }
+    else if (ratio < 1)   { statusEl.textContent = `${targetUnits - count} to go. Pacing well.`; statusEl.className = 'w-status'; }
+    else if (ratio < 1.3) { statusEl.textContent = '✓ Target hit — well done.';              statusEl.className = 'w-status good'; }
+    else                  { statusEl.textContent = 'Way past target — solid.';               statusEl.className = 'w-status good'; }
+
+    document.getElementById('wMinus').disabled = count <= 0;
+    renderWhy(calc, targetUnits);
+    renderHistory(targetUnits);
+  }
+
+  function renderWhy(calc, targetUnits) {
+    const p = state.profile;
+    const wDisp = state.weightUnit === 'lb' ? (p.weightKg * 2.20462).toFixed(0) + ' lb' : p.weightKg + ' kg';
+    let html = `<div class="w-why-row"><span class="wl">Base (${wDisp} × 35 ml)</span><span class="wv">${fmtMl(calc.base)}</span></div>`;
+    if (calc.exercise > 0) html += `<div class="w-why-row"><span class="wl">+ Exercise (${p.activityHrsPerWeek} h/wk)</span><span class="wv">+ ${fmtMl(calc.exercise)}</span></div>`;
+    if (calc.caffeine > 0) html += `<div class="w-why-row"><span class="wl">+ Caffeine (${state.caffeineMgPerDay} mg/day)</span><span class="wv">+ ${fmtMl(calc.caffeine)}</span></div>`;
+    if (calc.subs    > 0) html += `<div class="w-why-row"><span class="wl">+ Substances</span><span class="wv">+ ${fmtMl(calc.subs)}</span></div>`;
+    if (calc.adjust  > 0) html += `<div class="w-why-row"><span class="wl">+ Sex / age</span><span class="wv">+ ${fmtMl(calc.adjust)}</span></div>`;
+    html += `<div class="w-why-row wt"><span class="wl">Daily target</span><span class="wv">${fmtMl(calc.total)} ≈ ${targetUnits} ${unitPlural()}</span></div>`;
+    document.getElementById('wWhyBody').innerHTML = html;
+  }
+
+  function renderHistory(targetUnits) {
+    const dows = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    const rows = [];
+    for (let i = 6; i >= 1; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const k = dateKey(d);
+      const count = state.logs[k] || 0;
+      const pct  = Math.min(100, targetUnits > 0 ? (count / targetUnits) * 100 : 0);
+      rows.push(`<div class="w-hist-row">
+        <span class="w-hist-date">${dows[d.getDay()]} ${d.getMonth()+1}/${d.getDate()}</span>
+        <div class="w-hist-bar-wrap"><div class="w-hist-bar-fill${count < targetUnits ? ' miss' : ''}" style="width:${pct}%"></div></div>
+        <span class="w-hist-count">${count}/${targetUnits}</span>
+      </div>`);
+    }
+    document.getElementById('wHist').innerHTML = rows.join('') || '<div style="font-size:12px;color:var(--text-tertiary);font-style:italic;padding:8px 0">No logs yet.</div>';
+  }
+
+  document.getElementById('wPlus').addEventListener('click',  () => { setTodayCount(todayCount() + 1); render(); });
+  document.getElementById('wMinus').addEventListener('click', () => { setTodayCount(Math.max(0, todayCount() - 1)); render(); });
+
+  document.getElementById('wWhyBtn').addEventListener('click', () => {
+    const body = document.getElementById('wWhyBody');
+    const open = body.classList.toggle('open');
+    document.getElementById('wWhyArrow').style.transform = open ? 'rotate(180deg)' : '';
+    document.getElementById('wWhyBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+
+  const modalBg = document.getElementById('wModalBg');
+
+  function openSettings() {
+    document.getElementById('wBottleMl').value = state.bottleMl;
+    document.getElementById('wGlassMl').value  = state.glassMl;
+    document.getElementById('wWeight').value   = state.weightUnit === 'lb' ? Math.round(state.profile.weightKg * 2.20462) : state.profile.weightKg;
+    document.getElementById('wActivity').value = state.profile.activityHrsPerWeek;
+    setSegActive('wUnitSeg', 'u', state.unit);
+    setSegActive('wSexSeg',  's', state.profile.sex);
+    modalBg.classList.add('show');
+    document.body.classList.add('topbar-modal-open');
+  }
+  function closeSettings() {
+    modalBg.classList.remove('show');
+    document.body.classList.remove('topbar-modal-open');
+  }
+  function setSegActive(segId, attr, value) {
+    document.getElementById(segId).querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset[attr] === value));
+  }
+  function bindSeg(segId, attr, cb) {
+    document.getElementById(segId).querySelectorAll('button').forEach(b => {
+      b.addEventListener('click', () => {
+        document.getElementById(segId).querySelectorAll('button').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        cb(b.dataset[attr]);
+      });
+    });
+  }
+
+  bindSeg('wUnitSeg', 'u', v => { state.unit = v; saveState(); render(); });
+  bindSeg('wSexSeg',  's', v => { state.profile.sex = v; saveState(); render(); });
+
+  ['wBottleMl','wGlassMl','wWeight','wActivity'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      const v = parseFloat(document.getElementById(id).value);
+      if      (id === 'wBottleMl') state.bottleMl = v || 500;
+      else if (id === 'wGlassMl')  state.glassMl  = v || 250;
+      else if (id === 'wWeight')   state.profile.weightKg = state.weightUnit === 'lb' ? (v || 165) / 2.20462 : v || 75;
+      else if (id === 'wActivity') state.profile.activityHrsPerWeek = v || 0;
+      saveState(); render();
+    });
+  });
+
+  document.getElementById('wGear').addEventListener('click', openSettings);
+  document.getElementById('wModalDone').addEventListener('click', closeSettings);
+  modalBg.addEventListener('click', e => { if (e.target === modalBg) closeSettings(); });
+
+  window.addEventListener('storage', e => { if (e.key === LS_KEY) { state = loadState(); render(); } });
+
+  render();
+})();
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof initCloudSync !== 'function') return;
+  initCloudSync({
+    appKey: 'health',
+    syncedKeys: ['stack:items', 'stack:version', 'stack:low', 'po_water_v1'],
+    syncedPrefixes: ['stack:taken:'],
+    onApplied: function () { window.dispatchEvent(new Event('storage')); }
+  });
+});
 </script>
 
 </body>
