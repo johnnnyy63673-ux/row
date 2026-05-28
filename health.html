@@ -515,11 +515,97 @@ main {
 .w-seg button { flex: 1; padding: 8px 4px; border: none; background: transparent; color: var(--text-tertiary); border-radius: 7px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.12s; }
 .w-seg button.active { background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; }
 .w-modal-done { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.40); }
+
+/* ===== APPLE WATCH CARD ===== */
+.aw-section { margin-bottom: 32px; }
+.aw-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 22px 22px 18px;
+  backdrop-filter: blur(24px) saturate(1.2);
+  -webkit-backdrop-filter: blur(24px) saturate(1.2);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+}
+.aw-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+}
+.aw-brand {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary);
+}
+.aw-date { margin-left: auto; font-family: var(--font-mono); font-size: 10px; color: var(--text-tertiary); }
+.aw-body { display: flex; gap: 22px; align-items: flex-start; }
+.aw-ring-wrap { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.aw-ring { position: relative; width: 100px; height: 100px; }
+.aw-ring svg { width: 100%; height: 100%; display: block; transform: rotate(-90deg); }
+.aw-ring-track { fill: none; stroke: rgba(255,255,255,0.08); stroke-width: 8; }
+.aw-ring-fill {
+  fill: none; stroke-width: 8; stroke-linecap: round;
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.6s;
+}
+.aw-ring-overlay {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.aw-ring-pct { font-size: 26px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.aw-ring-label {
+  font-family: var(--font-mono); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-top: 2px;
+}
+.aw-right { flex: 1; min-width: 0; }
+.aw-stages-label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px;
+}
+.aw-stages-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; gap: 2px; margin-bottom: 8px; }
+.aw-stage-seg { height: 100%; border-radius: 2px; min-width: 2px; transition: flex 0.4s; }
+.aw-stage-seg.rem   { background: #818CF8; }
+.aw-stage-seg.deep  { background: #6366F1; }
+.aw-stage-seg.light { background: #7DD3FC; }
+.aw-stage-seg.awake { background: rgba(255,255,255,0.15); }
+.aw-stages-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 14px; }
+.aw-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-tertiary); }
+.aw-legend-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+.aw-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aw-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px; padding: 10px 12px;
+}
+.aw-stat-label {
+  font-family: var(--font-mono); font-size: 9px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 4px;
+}
+.aw-stat-value { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.aw-stat-unit { font-size: 11px; color: var(--text-secondary); margin-left: 2px; }
+.aw-empty { display: flex; flex-direction: column; align-items: center; padding: 10px 0 6px; text-align: center; gap: 10px; }
+.aw-empty-icon { font-size: 32px; opacity: 0.35; }
+.aw-empty-title { font-size: 14px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; }
+.aw-empty-desc { font-size: 12px; color: var(--text-tertiary); max-width: 280px; line-height: 1.5; }
+.aw-empty-steps { list-style: none; padding: 0; margin: 2px 0 0; display: flex; flex-direction: column; gap: 6px; text-align: left; width: 100%; max-width: 300px; }
+.aw-empty-steps li { font-size: 11px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 8px; line-height: 1.45; }
+.aw-step-num { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: var(--text-tertiary); font-family: var(--font-mono); }
+@media (max-width: 600px) {
+  .aw-card { padding: 18px 16px 14px; }
+  .aw-ring { width: 84px; height: 84px; }
+  .aw-ring-pct { font-size: 22px; }
+}
+@media (max-width: 480px) {
+  .aw-body { flex-direction: column; align-items: stretch; }
+  .aw-ring-wrap { flex-direction: row; gap: 16px; align-items: center; }
+}
 </style>
 </head>
 <body>
 
 <main>
+  <section class="aw-section">
+    <div class="section-title">Apple Watch</div>
+    <div class="aw-card" id="awCard">
+      <div style="text-align:center;padding:24px 0;color:var(--text-tertiary);font-size:13px;">Loading…</div>
+    </div>
+  </section>
+
   <div class="section-title">Daily Stack</div>
 
   <div class="stack-card">
@@ -1357,6 +1443,150 @@ document.addEventListener('DOMContentLoaded', function () {
     onApplied: function () { window.dispatchEvent(new Event('storage')); }
   });
 });
+</script>
+
+<script>
+(function () {
+  'use strict';
+  const SUPA_URL = 'https://edjooxfnnfqjnpkyiqci.supabase.co';
+  const SUPA_KEY = 'sb_publishable_Nmrj9fcDVsFDdMJNiFIamg_OACa_RZK';
+  const AW_KEY   = 'apple_health_v1';
+
+  function ringColor(pct) {
+    if (pct >= 67) return '#6EE7B7';
+    if (pct >= 34) return '#F2C063';
+    return '#FF8A8A';
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function renderEmpty(card) {
+    card.innerHTML =
+      '<div class="aw-header">' +
+        '<span style="font-size:16px">⌚</span>' +
+        '<span class="aw-brand">Apple Watch</span>' +
+      '</div>' +
+      '<div class="aw-empty">' +
+        '<div class="aw-empty-icon">⌚</div>' +
+        '<div class="aw-empty-title">Not connected</div>' +
+        '<div class="aw-empty-desc">Set up an iPhone Shortcut to sync health data here each morning.</div>' +
+        '<ol class="aw-empty-steps">' +
+          '<li><span class="aw-step-num">1</span>Open the Shortcuts app and create a new shortcut</li>' +
+          '<li><span class="aw-step-num">2</span>Add "Get Health Samples" actions for sleep, steps, active calories, and resting heart rate</li>' +
+          '<li><span class="aw-step-num">3</span>Add a "Get Contents of URL" POST action pointing to your Supabase REST endpoint</li>' +
+          '<li><span class="aw-step-num">4</span>Send JSON with key <code style="font-size:10px;opacity:0.7">apple_health_v1</code> — the card will update automatically</li>' +
+        '</ol>' +
+      '</div>';
+  }
+
+  function renderData(card, d) {
+    var pct    = Math.min(100, Math.max(0, Math.round(d.sleepScore || 0)));
+    var r      = 42;
+    var circ   = +(2 * Math.PI * r).toFixed(3);
+    var offset = +(circ * (1 - pct / 100)).toFixed(3);
+    var color  = ringColor(pct);
+
+    var st    = d.sleepStages || {};
+    var rem   = Math.max(0, st.rem   || 0);
+    var deep  = Math.max(0, st.deep  || 0);
+    var light = Math.max(0, st.light || 0);
+    var awake = Math.max(0, st.awake || 0);
+    var stTotal = rem + deep + light + awake || 1;
+
+    var dateStr = '—';
+    if (d.date) {
+      try { dateStr = new Date(d.date).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' }); } catch {}
+    }
+
+    var steps    = d.steps    ? Number(d.steps).toLocaleString()        : '—';
+    var calories = d.calories ? Math.round(d.calories)                  : '—';
+    var rhr      = d.restingHeartRate || '—';
+    var dur      = d.sleepDuration    || '—';
+
+    card.innerHTML =
+      '<div class="aw-header">' +
+        '<span style="font-size:16px">⌚</span>' +
+        '<span class="aw-brand">Apple Watch</span>' +
+        '<span class="aw-date">' + esc(dateStr) + '</span>' +
+      '</div>' +
+      '<div class="aw-body">' +
+        '<div class="aw-ring-wrap">' +
+          '<div class="aw-ring">' +
+            '<svg viewBox="0 0 100 100">' +
+              '<circle class="aw-ring-track" cx="50" cy="50" r="' + r + '"/>' +
+              '<circle class="aw-ring-fill" cx="50" cy="50" r="' + r + '"' +
+                ' stroke="' + color + '"' +
+                ' stroke-dasharray="' + circ + '"' +
+                ' stroke-dashoffset="' + offset + '"/>' +
+            '</svg>' +
+            '<div class="aw-ring-overlay">' +
+              '<span class="aw-ring-pct" style="color:' + color + '">' + pct + '%</span>' +
+              '<span class="aw-ring-label">Sleep</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="aw-right">' +
+          '<div class="aw-stages-label">Sleep Stages</div>' +
+          '<div class="aw-stages-bar">' +
+            '<div class="aw-stage-seg rem"   style="flex:' + (rem/stTotal)   + '"></div>' +
+            '<div class="aw-stage-seg deep"  style="flex:' + (deep/stTotal)  + '"></div>' +
+            '<div class="aw-stage-seg light" style="flex:' + (light/stTotal) + '"></div>' +
+            '<div class="aw-stage-seg awake" style="flex:' + (awake/stTotal) + '"></div>' +
+          '</div>' +
+          '<div class="aw-stages-legend">' +
+            '<div class="aw-legend-item"><div class="aw-legend-dot" style="background:#818CF8"></div>REM ' + rem + '%</div>' +
+            '<div class="aw-legend-item"><div class="aw-legend-dot" style="background:#6366F1"></div>Deep ' + deep + '%</div>' +
+            '<div class="aw-legend-item"><div class="aw-legend-dot" style="background:#7DD3FC"></div>Light ' + light + '%</div>' +
+            '<div class="aw-legend-item"><div class="aw-legend-dot" style="background:rgba(255,255,255,0.25)"></div>Awake ' + awake + '%</div>' +
+          '</div>' +
+          '<div class="aw-stats">' +
+            '<div class="aw-stat"><div class="aw-stat-label">Sleep</div><div class="aw-stat-value">' + esc(dur) + '</div></div>' +
+            '<div class="aw-stat"><div class="aw-stat-label">Steps</div><div class="aw-stat-value">' + esc(steps) + '</div></div>' +
+            '<div class="aw-stat"><div class="aw-stat-label">Calories</div><div class="aw-stat-value">' + esc(calories) + (calories !== '—' ? '<span class="aw-stat-unit">kcal</span>' : '') + '</div></div>' +
+            '<div class="aw-stat"><div class="aw-stat-label">Resting HR</div><div class="aw-stat-value">' + esc(rhr) + (rhr !== '—' ? '<span class="aw-stat-unit">bpm</span>' : '') + '</div></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  async function loadAW() {
+    var card = document.getElementById('awCard');
+    if (!card) return;
+
+    // Prefer localStorage (populated by sync.js or a previous fetch)
+    var local = localStorage.getItem(AW_KEY);
+    if (local) {
+      try { renderData(card, JSON.parse(local)); return; } catch {}
+    }
+
+    // Fall back to a direct Supabase read
+    if (!window.supabase) { renderEmpty(card); return; }
+    try {
+      var supa = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+      var result = await supa.from('app_state').select('data').eq('key', AW_KEY).maybeSingle();
+      if (result.data && result.data.data) {
+        renderData(card, result.data.data);
+        try { localStorage.setItem(AW_KEY, JSON.stringify(result.data.data)); } catch {}
+      } else {
+        renderEmpty(card);
+      }
+    } catch (e) {
+      renderEmpty(card);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadAW);
+  } else {
+    loadAW();
+  }
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === AW_KEY) loadAW();
+  });
+})();
 </script>
 
 </body>
