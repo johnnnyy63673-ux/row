@@ -84,7 +84,7 @@ html, body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
-.shell { max-width: 720px; margin: 0 auto; padding: 24px 16px 80px; }
+.shell { max-width: 720px; margin: 0 auto; padding: max(24px, env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) 80px calc(16px + env(safe-area-inset-left)); }
 
 /* ----- Top day pill + header ----- */
 .day-pill {
@@ -453,7 +453,7 @@ html, body {
 .modal-actions .btn-primary { flex: 1; }
 
 @media (max-width: 480px) {
-  .shell { padding: 16px 12px 60px; }
+  .shell { padding: max(16px, env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 60px calc(12px + env(safe-area-inset-left)); }
   .water-num { font-size: 48px; }
 }
 </style>
@@ -1100,6 +1100,7 @@ html, body {
    getting blocked by the iPhone home indicator. These rules add
    safe-area padding so nothing sits under it. */
 .shell {
+  padding-top: max(24px, env(safe-area-inset-top));
   padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 .modal-bg {
