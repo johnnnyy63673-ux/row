@@ -82,6 +82,21 @@ main {
   display: flex; align-items: center; gap: 12px;
 }
 .section-title::before { content: '≡'; font-size: 14px; opacity: 0.5; }
+.water-embed { margin-top: 56px; }
+.water-iframe {
+  display: block;
+  width: 100%;
+  height: 880px;
+  border: 0;
+  background: transparent;
+  border-radius: 16px;
+  overflow: hidden;
+  color-scheme: dark;
+}
+@media (max-width: 480px) {
+  .water-embed { margin-top: 40px; }
+  .water-iframe { height: 780px; }
+}
 
 .stack-card {
   background: var(--bg-card);
@@ -635,6 +650,11 @@ main {
       <button class="w-modal-done" id="wModalDone">Done</button>
     </div>
   </div>
+
+  <section id="water" class="water-embed">
+    <div class="section-title">Water Tracker</div>
+    <iframe src="po-water.html" class="water-iframe" loading="lazy" title="Water Tracker"></iframe>
+  </section>
 
   <div class="attribution">// editable template · all data stays in your browser</div>
 </main>
