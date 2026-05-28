@@ -14,8 +14,8 @@
   // -------- Supabase config (same project as the rest of the dashboard) --------
   // For your audience's standalone, replace these with placeholders
   // and have them paste their own values, just like the other pages.
-  const TOPBAR_SUPABASE_URL = 'PASTE-YOUR-SUPABASE-PROJECT-URL-HERE';
-  const TOPBAR_SUPABASE_KEY = 'PASTE-YOUR-SUPABASE-PUBLISHABLE-KEY-HERE';
+  const TOPBAR_SUPABASE_URL = 'https://edjooxfnnfqjnpkyiqci.supabase.co';
+  const TOPBAR_SUPABASE_KEY = 'sb_publishable_Nmrj9fcDVsFDdMJNiFIamg_OACa_RZK';
 
   // -------- CSS --------
   const css = `
@@ -179,17 +179,13 @@ body.topbar-modal-open {
     <span class="topbar-pill-label">STACK</span>
     <span class="topbar-pill-count" id="topbarStackCount">—/—</span>
   </a>
-  <div class="topbar-water-wrap">
-    <a href="health.html#water" class="topbar-water-pill" id="topbarWater">
-      <span class="topbar-pill-dot"></span>
-      <span class="topbar-pill-label">WATER</span>
-      <span class="topbar-pill-count" id="topbarWaterCount">—/—</span>
-    </a>
-    <button class="topbar-water-add" id="topbarWaterAdd" aria-label="Log one drink" type="button">+</button>
-  </div>
   <a href="gym.html" class="topbar-pill" id="topbarGym">
     <span class="topbar-pill-dot"></span>
     <span class="topbar-pill-label">GYM</span>
+  </a>
+  <a href="watch.html" class="topbar-pill" id="topbarWatch">
+    <span class="topbar-pill-dot"></span>
+    <span class="topbar-pill-label">WATCH</span>
   </a>
   <a href="finance.html" class="topbar-pill" id="topbarFinance">
     <span class="topbar-pill-dot"></span>
@@ -292,23 +288,18 @@ body.topbar-modal-open {
   function render() {
     const goalsEl = document.getElementById('topbarGoals');
     const stackEl = document.getElementById('topbarStack');
-    const waterEl = document.getElementById('topbarWater');
     if (!goalsEl) return; // not injected yet
 
     const g = getGoalsProgress();
     const s = getStackProgress();
-    const w = getWaterProgress();
 
     document.getElementById('topbarGoalsCount').textContent =
       g.total ? g.done + '/' + g.total : '0/0';
     document.getElementById('topbarStackCount').textContent =
       s.total ? s.done + '/' + s.total : '0/0';
-    document.getElementById('topbarWaterCount').textContent =
-      w.total ? w.done + '/' + w.total : '0/0';
 
     setPillStatus(goalsEl, classifyStatus(g.done, g.total));
     setPillStatus(stackEl, classifyStatus(s.done, s.total));
-    setPillStatus(waterEl, classifyStatus(w.done, w.total));
   }
 
   // -------- Water +1 (works from any page) --------
