@@ -3,9 +3,9 @@
 // Shortcut and upserts it into Supabase under key 'apple_health_v1'.
 //
 // Required environment variables (set in Vercel project settings):
-//   SUPABASE_URL    — e.g. https://xxxx.supabase.co
-//   SUPABASE_KEY    — service-role key (preferred) or anon key
-//   SYNC_SECRET     — any random string; sent as Bearer token by the Shortcut
+//   SUPABASE_URL         — e.g. https://xxxx.supabase.co
+//   SUPABASE_KEY         — service-role key (preferred) or anon key
+//   HEALTH_SYNC_SECRET   — any random string; sent as x-health-secret header by the Shortcut
 
 export default async function handler(req, res) {
   // Only POST
@@ -14,9 +14,9 @@ export default async function handler(req, res) {
   }
 
   // Auth — require the shared secret so random callers can't write your data
-  const auth = req.headers['authorization'] || '';
-  const secret = process.env.SYNC_SECRET || '';
-  if (!secret || auth !== 'Bearer ' + secret) {
+  const incoming = req.headers['x-health-secret'] || '';
+  const secret   = process.env.HEALTH_SYNC_SECRET  || '';
+  if (!secret || incoming !== secret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
