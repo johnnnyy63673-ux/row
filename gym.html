@@ -952,6 +952,19 @@ img, video, canvas, svg { max-width: 100%; }
   background: transparent; border-top: 2px dashed rgba(110,231,183,0.45);
   height: 2px;
 }
+.wt-window-btn {
+  display: block; margin: 12px auto 0;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-3);
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  padding: 5px 16px; border-radius: 999px; cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.wt-window-btn:hover { background: rgba(255,255,255,0.05); color: var(--text-1); }
+.wt-window-btn.is-expanded { color: var(--good); border-color: rgba(110,231,183,0.25); }
 
 /* Composition estimate */
 .wt-comp {
@@ -1574,6 +1587,7 @@ img, video, canvas, svg { max-width: 100%; }
           <g id="wtChartContent"></g>
         </svg>
         <div class="wt-meta" id="wtMeta">0 entries</div>
+        <button class="wt-window-btn hidden" id="wtWindowBtn" type="button">↓ Show 90 days</button>
       </div>
 
       <div class="wt-legend hidden" id="wtLegend">
@@ -3075,6 +3089,15 @@ img, video, canvas, svg { max-width: 100%; }
 
   let wtEntries = wtLoad();
 
+  // 30/90-day toggle
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = $('wtWindowBtn');
+    if (btn) btn.addEventListener('click', function () {
+      wtChartWindow = wtChartWindow === 30 ? 90 : 30;
+      wtRenderChart();
+    });
+  });
+
   function wtSaveEntry(weight) {
     const key = wtDateKey(new Date());
     const existing = wtEntries.find(e => e.dateKey === key);
@@ -3146,24 +3169,42 @@ img, video, canvas, svg { max-width: 100%; }
     }
   }
 
+  let wtChartWindow = 30;
+
   function wtRenderChart() {
-    const recent = wtEntries.slice(-30);
-    const weights = recent.map(e => e.weight);
+    // Filter to calendar days within the chosen window
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const cutoff = new Date(today); cutoff.setDate(cutoff.getDate() - wtChartWindow);
+    const recent = wtEntries.filter(e => wtParseKey(e.dateKey) >= cutoff);
+
+    // Show / update the expand button
+    const btn = $('wtWindowBtn');
+    if (btn) {
+      const hasOlder = wtEntries.some(e => wtParseKey(e.dateKey) < cutoff);
+      const show = wtChartWindow === 90 || hasOlder;
+      btn.classList.toggle('hidden', !show);
+      btn.classList.toggle('is-expanded', wtChartWindow === 90);
+      btn.textContent = wtChartWindow === 90 ? '↑ Show 30 days' : '↓ Show 90 days';
+    }
+
+    // Need at least 1 point to draw
+    const pts = recent.length ? recent : wtEntries.slice(-1);
+    const weights = pts.map(e => e.weight);
     const min = Math.min.apply(null, weights);
     const max = Math.max.apply(null, weights);
     const pad = Math.max((max - min) * 0.15, 0.5);
     const yMin = min - pad, yMax = max + pad;
     const xLeft = 8, xRight = 312, yTop = 20, yBot = 110;
     const xRange = xRight - xLeft, yRange = yBot - yTop;
-    const xFor = (i) => recent.length === 1 ? xRight : xLeft + (i / (recent.length - 1)) * xRange;
+    const xFor = (i) => pts.length === 1 ? xRight : xLeft + (i / (pts.length - 1)) * xRange;
     const yFor = (w) => yBot - ((w - yMin) / (yMax - yMin)) * yRange;
-    const points = recent.map((e, i) => ({ x: xFor(i), y: yFor(e.weight) }));
+    const points = pts.map((e, i) => ({ x: xFor(i), y: yFor(e.weight) }));
     const linePath = wtSmoothPath(points);
     const areaPath = linePath + ' L ' + points[points.length - 1].x.toFixed(2) + ' ' + yBot + ' L ' + points[0].x.toFixed(2) + ' ' + yBot + ' Z';
     // 7d moving avg
-    const avgPoints = recent.map((_, i) => {
+    const avgPoints = points.map((_, i) => {
       const start = Math.max(0, i - 6);
-      const win = recent.slice(start, i + 1);
+      const win = pts.slice(start, i + 1);
       const avg = win.reduce((s, p) => s + p.weight, 0) / win.length;
       return { x: xFor(i), y: yFor(avg) };
     });
@@ -3173,13 +3214,13 @@ img, video, canvas, svg { max-width: 100%; }
              + '<path class="wt-line" filter="url(#wtGlow)" d="' + linePath + '"></path>';
     points.forEach((p, i) => {
       const cls = (i === points.length - 1) ? 'wt-dot-today' : 'wt-dot';
-      const r = (i === points.length - 1) ? 5 : 3;
+      const r   = (i === points.length - 1) ? 5 : 3;
       html += '<circle class="' + cls + '" cx="' + p.x.toFixed(2) + '" cy="' + p.y.toFixed(2) + '" r="' + r + '"/>';
     });
     $('wtChartContent').innerHTML = html;
     $('wtYAxisMax').textContent = yMax.toFixed(1);
     $('wtYAxisMin').textContent = yMin.toFixed(1);
-    $('wtMeta').textContent = wtEntries.length + ' ' + (wtEntries.length === 1 ? 'entry' : 'entries') + ' · last ' + recent.length + ' days';
+    $('wtMeta').textContent = wtEntries.length + ' ' + (wtEntries.length === 1 ? 'entry' : 'entries') + ' · ' + wtChartWindow + 'd window · ' + pts.length + ' shown';
   }
 
   function wtRenderDelta() {
