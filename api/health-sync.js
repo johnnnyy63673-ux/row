@@ -30,20 +30,17 @@ export default async function handler(req, res) {
   const body = req.body || {};
   const { sleepDuration, sleepScore, steps, calories, restingHeartRate, date, sleepStages } = body;
 
-  // Basic validation
-  if (!date) {
-    return res.status(400).json({ error: 'date is required' });
-  }
+  const today = new Date().toISOString().slice(0, 10);
 
   const payload = {
-    sleepScore:        sleepScore        != null ? Number(sleepScore)        : null,
-    sleepDuration:     sleepDuration     || null,
-    steps:             steps             != null ? Number(steps)             : null,
-    calories:          calories          != null ? Number(calories)          : null,
-    restingHeartRate:  restingHeartRate  != null ? Number(restingHeartRate)  : null,
-    date:              String(date),
-    sleepStages:       sleepStages       || null,
-    syncedAt:          new Date().toISOString(),
+    sleepScore:       Number(sleepScore)       || 0,
+    sleepDuration:    sleepDuration            || '0h 0m',
+    steps:            Number(steps)            || 0,
+    calories:         Number(calories)         || 0,
+    restingHeartRate: Number(restingHeartRate) || 0,
+    date:             date ? String(date) : today,
+    sleepStages:      sleepStages || { rem: 0, deep: 0, light: 0, awake: 0 },
+    syncedAt:         new Date().toISOString(),
   };
 
   // Upsert into Supabase app_state table via REST API (no SDK needed)
