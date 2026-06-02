@@ -4,7 +4,7 @@
 //
 // Required environment variables (set in Vercel project settings):
 //   SUPABASE_URL         — e.g. https://xxxx.supabase.co
-//   SUPABASE_KEY         — service-role key (preferred) or anon key
+//   SUPABASE_SERVICE_KEY — service-role key (preferred) or anon key
 //   HEALTH_SYNC_SECRET   — any random string; sent as x-health-secret header by the Shortcut
 
 export default async function handler(req, res) {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   }
 
   const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_KEY;
+  const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
   if (!supabaseUrl || !supabaseKey) {
     return res.status(500).json({ error: 'Supabase env vars not configured' });
   }
