@@ -1,9 +1,10 @@
 // api/fitbit/callback.js
-// Receives the OAuth2 authorization code from Google, exchanges it for
-// access + refresh tokens, stores them in Supabase, then redirects back.
+// Handles the Fitbit OAuth2 callback: exchanges the authorization code for
+// access + refresh tokens and stores them in Supabase.
+// Fitbit token exchange uses HTTP Basic Auth (client_id:client_secret).
 
-const REDIRECT_URI  = 'https://row-zeta.vercel.app/api/fitbit/callback';
-const TOKEN_KEY     = 'google_health_tokens';
+const REDIRECT_URI = 'https://row-zeta.vercel.app/api/fitbit/callback';
+const TOKEN_KEY    = 'google_health_tokens'; // reuse existing Supabase row key
 
 async function storeTokens(supabaseUrl, supabaseKey, tokens) {
   await fetch(`${supabaseUrl}/rest/v1/app_state`, {
@@ -26,24 +27,31 @@ export default async function handler(req, res) {
   const { code, error } = req.query;
 
   if (error || !code) {
-    return res.redirect(302, '/health.html?fb_error=' + (error || 'no_code'));
+    return res.redirect(302, '/health.html?fb_error=' + encodeURIComponent(error || 'no_code'));
   }
 
-  const clientId     = process.env.GOOGLE_HEALTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_HEALTH_CLIENT_SECRET;
+  const clientId     = process.env.FITBIT_CLIENT_ID;
+  const clientSecret = process.env.FITBIT_CLIENT_SECRET;
 
-  // Exchange authorization code for tokens
+  if (!clientId || !clientSecret) {
+    return res.redirect(302, '/health.html?fb_error=credentials_not_configured');
+  }
+
+  // Fitbit requires Basic Auth for token exchange
+  const basicAuth = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
   let tokenRes, tokens;
   try {
-    tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    tokenRes = await fetch('https://api.fitbit.com/oauth2/token', {
       method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: {
+        'Authorization': `Basic ${basicAuth}`,
+        'Content-Type':  'application/x-www-form-urlencoded',
+      },
       body: new URLSearchParams({
         code,
-        client_id:     clientId,
-        client_secret: clientSecret,
-        redirect_uri:  REDIRECT_URI,
-        grant_type:    'authorization_code',
+        grant_type:   'authorization_code',
+        redirect_uri: REDIRECT_URI,
       }),
     });
     tokens = await tokenRes.json();
@@ -51,14 +59,16 @@ export default async function handler(req, res) {
     return res.redirect(302, '/health.html?fb_error=fetch_failed');
   }
 
-  if (!tokenRes.ok || tokens.error) {
-    return res.redirect(302, '/health.html?fb_error=token_exchange_failed');
+  if (!tokenRes.ok || tokens.errors) {
+    const detail = tokens.errors ? tokens.errors[0].message : tokenRes.status;
+    return res.redirect(302, '/health.html?fb_error=' + encodeURIComponent(detail));
   }
 
   const stored = {
     access_token:  tokens.access_token,
     refresh_token: tokens.refresh_token,
-    expires_at:    Date.now() + (tokens.expires_in || 3600) * 1000,
+    user_id:       tokens.user_id,
+    expires_at:    Date.now() + (tokens.expires_in || 28800) * 1000,
   };
 
   const supabaseUrl = process.env.SUPABASE_URL;

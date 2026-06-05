@@ -1,5 +1,5 @@
 // api/fitbit/logout.js
-// Removes the stored Google Health tokens from Supabase and redirects back.
+// Deletes stored Fitbit tokens from Supabase and redirects back to health page.
 
 export default async function handler(req, res) {
   const supabaseUrl = process.env.SUPABASE_URL;

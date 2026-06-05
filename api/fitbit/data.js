@@ -1,165 +1,117 @@
 // api/fitbit/data.js
-// Fetches health metrics from the Google Fitness REST API using stored
-// OAuth tokens. Refreshes the access token automatically if expired.
+// Fetches today's health metrics directly from the Fitbit Web API.
+// Automatically refreshes the access token if it has expired.
+//
+// Fitbit endpoints used:
+//   /1.2/user/-/sleep/date/{date}.json          — sleep duration, efficiency, stages
+//   /1/user/-/activities/heart/date/{date}/1d   — resting heart rate
+//   /1/user/-/hrv/date/{date}.json              — HRV (RMSSD)
+//   /1/user/-/activities/date/{date}.json       — steps, calories
+//
 // Returns: { connected, recovery, hrv, rhr, sleepHours, sleepPerf,
 //            sleepTargetHours, bedtime, wakeTime, strain, calories,
-//            steps, sleepDebt, syncedAt }
+//            steps, sleepDebt, stageDeep, stageRem, stageLight,
+//            stageWake, syncedAt }
 
 const TOKEN_KEY    = 'google_health_tokens';
-const FIT_BASE     = 'https://www.googleapis.com/fitness/v1/users/me';
-const SLEEP_TARGET = 8; // hours
+const FITBIT       = 'https://api.fitbit.com';
+const SLEEP_TARGET = 8;
 
-// ── Supabase helpers ────────────────────────────────────────────────────────
-
-async function supaGet(url, key) {
-  const res = await fetch(url, {
-    headers: { 'apikey': key, 'Authorization': `Bearer ${key}` },
-  });
-  return res.json();
-}
-
-async function supaUpsert(url, key, payload) {
-  await fetch(url, {
-    method:  'POST',
-    headers: {
-      'apikey':        key,
-      'Authorization': `Bearer ${key}`,
-      'Content-Type':  'application/json',
-      'Prefer':        'resolution=merge-duplicates,return=minimal',
-    },
-    body: JSON.stringify(payload),
-  });
-}
+// ── Supabase ──────────────────────────────────────────────────────────────────
 
 async function getTokens(supabaseUrl, supabaseKey) {
-  const rows = await supaGet(
+  const res = await fetch(
     `${supabaseUrl}/rest/v1/app_state?key=eq.${TOKEN_KEY}&select=data`,
-    supabaseKey,
+    { headers: { 'apikey': supabaseKey, 'Authorization': `Bearer ${supabaseKey}` } },
   );
+  const rows = await res.json();
   return (Array.isArray(rows) && rows[0] && rows[0].data) || null;
 }
 
 async function saveTokens(supabaseUrl, supabaseKey, tokens) {
-  await supaUpsert(`${supabaseUrl}/rest/v1/app_state`, supabaseKey, {
-    key:        TOKEN_KEY,
-    data:       tokens,
-    updated_at: new Date().toISOString(),
+  await fetch(`${supabaseUrl}/rest/v1/app_state`, {
+    method:  'POST',
+    headers: {
+      'apikey':        supabaseKey,
+      'Authorization': `Bearer ${supabaseKey}`,
+      'Content-Type':  'application/json',
+      'Prefer':        'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify({
+      key:        TOKEN_KEY,
+      data:       tokens,
+      updated_at: new Date().toISOString(),
+    }),
   });
 }
 
-// ── Token refresh ────────────────────────────────────────────────────────────
+// ── Fitbit OAuth token refresh ────────────────────────────────────────────────
 
 async function refreshAccessToken(tokens) {
-  const res = await fetch('https://oauth2.googleapis.com/token', {
+  const clientId     = process.env.FITBIT_CLIENT_ID;
+  const clientSecret = process.env.FITBIT_CLIENT_SECRET;
+  const basicAuth    = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+
+  const res = await fetch(`${FITBIT}/oauth2/token`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: {
+      'Authorization': `Basic ${basicAuth}`,
+      'Content-Type':  'application/x-www-form-urlencoded',
+    },
     body: new URLSearchParams({
-      refresh_token: tokens.refresh_token,
-      client_id:     process.env.GOOGLE_HEALTH_CLIENT_ID,
-      client_secret: process.env.GOOGLE_HEALTH_CLIENT_SECRET,
       grant_type:    'refresh_token',
+      refresh_token: tokens.refresh_token,
     }),
   });
   const data = await res.json();
-  if (!res.ok || data.error) throw new Error('Token refresh failed: ' + (data.error || res.status));
+  if (!res.ok || data.errors) {
+    throw new Error('Token refresh failed: ' + (data.errors?.[0]?.message || res.status));
+  }
   return {
     access_token:  data.access_token,
     refresh_token: data.refresh_token || tokens.refresh_token,
-    expires_at:    Date.now() + (data.expires_in || 3600) * 1000,
+    user_id:       tokens.user_id,
+    expires_at:    Date.now() + (data.expires_in || 28800) * 1000,
   };
 }
 
-// ── Google Fitness API helpers ───────────────────────────────────────────────
+// ── Fitbit REST GET ───────────────────────────────────────────────────────────
 
-async function fitGet(path, accessToken) {
-  const res = await fetch(`${FIT_BASE}${path}`, {
+async function fitGet(endpoint, accessToken) {
+  const res = await fetch(`${FITBIT}${endpoint}`, {
     headers: { 'Authorization': `Bearer ${accessToken}` },
   });
-  if (!res.ok) throw new Error(`Fitness GET ${path} → ${res.status}`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const msg  = body.errors?.[0]?.message || res.status;
+    throw new Error(`Fitbit ${endpoint} → ${msg}`);
+  }
   return res.json();
 }
 
-async function fitAggregate(body, accessToken) {
-  const res = await fetch(`${FIT_BASE}/dataset:aggregate`, {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify(body),
-  });
-  if (!res.ok) throw new Error(`Fitness aggregate → ${res.status}`);
-  return res.json();
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+// Parse Fitbit local-time string "2026-06-04T07:30:00.000" without timezone
+// conversion (Fitbit times are already in the user's local time).
+function fmtFitbitTime(s) {
+  if (!s) return '—';
+  const m = s.match(/T(\d{1,2}):(\d{2})/);
+  if (!m) return '—';
+  let h = parseInt(m[1], 10);
+  const min  = m[2];
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  if (h === 0) h = 12;
+  else if (h > 12) h -= 12;
+  return `${h}:${min} ${ampm}`;
 }
 
-// ── Data parsing helpers ─────────────────────────────────────────────────────
-
-function parseFpMin(bucket) {
-  let min = null;
-  for (const b of (bucket || [])) {
-    for (const ds of (b.dataset || [])) {
-      for (const pt of (ds.point || [])) {
-        for (const v of (pt.value || [])) {
-          const n = v.fpVal;
-          if (n && n > 20 && n < 250) min = (min === null ? n : Math.min(min, n));
-        }
-      }
-    }
-  }
-  return min ? Math.round(min) : 0;
-}
-
-function parseFpAvg(bucket) {
-  let sum = 0, count = 0;
-  for (const b of (bucket || [])) {
-    for (const ds of (b.dataset || [])) {
-      for (const pt of (ds.point || [])) {
-        for (const v of (pt.value || [])) {
-          if (v.fpVal) { sum += v.fpVal; count++; }
-        }
-      }
-    }
-  }
-  return count ? Math.round(sum / count) : 0;
-}
-
-function parseIntSum(bucket) {
-  let total = 0;
-  for (const b of (bucket || [])) {
-    for (const ds of (b.dataset || [])) {
-      for (const pt of (ds.point || [])) {
-        for (const v of (pt.value || [])) {
-          total += (v.intVal || 0);
-        }
-      }
-    }
-  }
-  return total;
-}
-
-function parseFpSum(bucket) {
-  let total = 0;
-  for (const b of (bucket || [])) {
-    for (const ds of (b.dataset || [])) {
-      for (const pt of (ds.point || [])) {
-        for (const v of (pt.value || [])) {
-          total += (v.fpVal || 0);
-        }
-      }
-    }
-  }
-  return Math.round(total);
-}
-
-function fmtTime(ms) {
-  return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-}
-
-// ── Main handler ─────────────────────────────────────────────────────────────
+// ── Main handler ──────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY;
-
   if (!supabaseUrl || !supabaseKey) {
     return res.status(500).json({ error: 'Supabase not configured' });
   }
@@ -174,100 +126,85 @@ export default async function handler(req, res) {
       tokens = await refreshAccessToken(tokens);
       await saveTokens(supabaseUrl, supabaseKey, tokens);
     } catch {
-      return res.status(401).json({ connected: false, error: 'Token expired' });
+      return res.status(401).json({ connected: false, error: 'Token expired — please reconnect' });
     }
   }
 
-  const now     = Date.now();
-  const dayAgo  = now - 86_400_000;
-  const weekAgo = now - 7 * 86_400_000;
-  const at      = tokens.access_token;
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  const at    = tokens.access_token;
 
   try {
-    // ── Sleep ────────────────────────────────────────────────────────────────
-    const sleepRes  = await fitGet(
-      `/sessions?startTime=${new Date(dayAgo).toISOString()}&endTime=${new Date(now).toISOString()}&activityType=72`,
-      at,
+    // Fetch all four endpoints in parallel; HRV is optional (not all devices support it)
+    const [sleepData, hrData, actData, hrvData] = await Promise.all([
+      fitGet(`/1.2/user/-/sleep/date/${today}.json`, at),
+      fitGet(`/1/user/-/activities/heart/date/${today}/1d.json`, at),
+      fitGet(`/1/user/-/activities/date/${today}.json`, at),
+      fitGet(`/1/user/-/hrv/date/${today}.json`, at).catch(() => null),
+    ]);
+
+    // ── Sleep ──────────────────────────────────────────────────────────────
+    const sleepLogs = sleepData.sleep || [];
+    // Pick the longest (main) sleep record, ignoring naps
+    const mainSleep = sleepLogs.reduce(
+      (best, s) => (!best || s.minutesAsleep > best.minutesAsleep) ? s : best,
+      null,
     );
-    const sessions  = (sleepRes.session || []).filter(s => s.activityType === '72' || s.activityType === 72);
-    let sleepMs = 0, bedtime = '—', wakeTime = '—';
-    if (sessions.length > 0) {
-      // Use the longest sleep session (not naps)
-      const main = sessions.reduce((a, b) =>
-        (parseInt(b.endTimeMillis) - parseInt(b.startTimeMillis)) >
-        (parseInt(a.endTimeMillis) - parseInt(a.startTimeMillis)) ? b : a
-      );
-      sleepMs  = parseInt(main.endTimeMillis) - parseInt(main.startTimeMillis);
-      bedtime  = fmtTime(parseInt(main.startTimeMillis));
-      wakeTime = fmtTime(parseInt(main.endTimeMillis));
-    }
-    const sleepHours = parseFloat((sleepMs / 3_600_000).toFixed(1));
-    const sleepPerf  = Math.min(100, Math.round(sleepHours / SLEEP_TARGET * 100));
 
-    // ── Weekly sleep debt ────────────────────────────────────────────────────
-    const weekSleepRes = await fitGet(
-      `/sessions?startTime=${new Date(weekAgo).toISOString()}&endTime=${new Date(now).toISOString()}&activityType=72`,
-      at,
-    );
-    const weekSessions = (weekSleepRes.session || []).filter(s => s.activityType === '72' || s.activityType === 72);
-    const weekSleepHrs = weekSessions.reduce(
-      (s, sess) => s + (parseInt(sess.endTimeMillis) - parseInt(sess.startTimeMillis)) / 3_600_000,
-      0,
-    );
-    const sleepDebt = parseFloat(Math.max(0, SLEEP_TARGET * 7 - weekSleepHrs).toFixed(1));
+    const sleepMinutes  = mainSleep ? (mainSleep.minutesAsleep || 0) : 0;
+    const sleepHours    = parseFloat((sleepMinutes / 60).toFixed(1));
+    // Fitbit efficiency is already 0-100 (time asleep / time in bed × 100)
+    const sleepPerf     = mainSleep ? (mainSleep.efficiency || 0) : 0;
+    const bedtime       = mainSleep ? fmtFitbitTime(mainSleep.startTime) : '—';
+    const wakeTime      = mainSleep ? fmtFitbitTime(mainSleep.endTime)   : '—';
 
-    // ── Heart rate (resting = daily minimum) ────────────────────────────────
-    const hrAgg = await fitAggregate({
-      aggregateBy:   [{ dataTypeName: 'com.google.heart_rate.bpm' }],
-      bucketByTime:  { durationMillis: 86_400_000 },
-      startTimeMillis: dayAgo,
-      endTimeMillis:   now,
-    }, at);
-    const rhr = parseFpMin(hrAgg.bucket);
+    // Sleep stages (minutes) — only available on newer Fitbit devices
+    const stagesSum = mainSleep?.levels?.summary || {};
+    const stageDeep  = stagesSum.deep?.minutes  ?? 0;
+    const stageRem   = stagesSum.rem?.minutes   ?? 0;
+    const stageLight = stagesSum.light?.minutes ?? 0;
+    const stageWake  = stagesSum.wake?.minutes  ?? 0;
 
-    // ── HRV ─────────────────────────────────────────────────────────────────
-    let hrv = 0;
-    try {
-      const hrvAgg = await fitAggregate({
-        aggregateBy:   [{ dataTypeName: 'com.google.heart_rate.variability.rmssd' }],
-        bucketByTime:  { durationMillis: 86_400_000 },
-        startTimeMillis: dayAgo,
-        endTimeMillis:   now,
-      }, at);
-      hrv = parseFpAvg(hrvAgg.bucket);
-    } catch {}
+    // ── Resting Heart Rate ─────────────────────────────────────────────────
+    const hrArr = hrData['activities-heart'] || [];
+    const hrVal = hrArr.length ? (hrArr[hrArr.length - 1].value || {}) : {};
+    const rhr   = hrVal.restingHeartRate || 0;
 
-    // ── Steps + calories ─────────────────────────────────────────────────────
-    const actAgg = await fitAggregate({
-      aggregateBy: [
-        { dataTypeName: 'com.google.step_count.delta' },
-        { dataTypeName: 'com.google.calories.expended' },
-      ],
-      bucketByTime:  { durationMillis: 86_400_000 },
-      startTimeMillis: dayAgo,
-      endTimeMillis:   now,
-    }, at);
-    const steps    = parseIntSum(actAgg.bucket);
-    const calories = parseFpSum(actAgg.bucket);
+    // ── HRV ───────────────────────────────────────────────────────────────
+    // dailyRmssd: average RMSSD over the full sleep period (ms)
+    const hrvArr   = hrvData?.hrv || [];
+    const hrvEntry = hrvArr.length ? hrvArr[hrvArr.length - 1] : null;
+    const hrv      = hrvEntry ? Math.round(hrvEntry.value?.dailyRmssd || 0) : 0;
 
-    // ── Derived scores ───────────────────────────────────────────────────────
-    // Recovery (0-100): HRV-weighted if available, otherwise sleep-only
+    // ── Activity ──────────────────────────────────────────────────────────
+    const actSummary = actData.summary || {};
+    const steps      = actSummary.steps             || 0;
+    const calories   = actSummary.caloriesOut        || 0;
+    const actCal     = actSummary.activityCalories   || 0; // active-only calories
+
+    // ── Recovery score (0-100) ────────────────────────────────────────────
+    // If HRV is available: weighted average of HRV score + sleep efficiency.
+    // Otherwise fall back to sleep efficiency alone.
     let recovery;
     if (hrv > 0) {
+      // Normalise RMSSD: 20 ms = 0 pts, 80 ms = 100 pts
       const hrvScore = Math.min(100, Math.max(0, Math.round((hrv - 20) / 60 * 100)));
-      recovery = Math.round(sleepPerf * 0.4 + hrvScore * 0.6);
+      recovery = Math.min(100, Math.round(sleepPerf * 0.4 + hrvScore * 0.6));
     } else {
       recovery = sleepPerf;
     }
 
-    // Strain (0-21 WHOOP scale approximation from calories)
-    const strain = parseFloat(Math.min(21, calories / 100).toFixed(1));
+    // ── Strain (WHOOP-style 0-21, estimated from active calories) ─────────
+    // Active calories ÷ 75 maps ~1500 active cal day → 20 strain
+    const strain = parseFloat(Math.min(21, actCal / 75).toFixed(1));
+
+    // ── Sleep debt (last night vs target) ─────────────────────────────────
+    const sleepDebt = parseFloat(Math.max(0, SLEEP_TARGET - sleepHours).toFixed(1));
 
     return res.status(200).json({
       connected:        true,
-      recovery:         Math.min(100, Math.max(0, recovery)),
-      hrv:              hrv || 0,
-      rhr:              rhr || 0,
+      recovery,
+      hrv,
+      rhr,
       sleepHours,
       sleepPerf,
       sleepTargetHours: SLEEP_TARGET,
@@ -277,11 +214,16 @@ export default async function handler(req, res) {
       calories,
       steps,
       sleepDebt,
-      weeklyAvgSleep:   parseFloat((weekSleepHrs / Math.max(1, weekSessions.length)).toFixed(1)),
-      syncedAt:         new Date().toISOString(),
+      stageDeep,
+      stageRem,
+      stageLight,
+      stageWake,
+      syncedAt: new Date().toISOString(),
     });
 
   } catch (err) {
+    // Return connected:true so the UI doesn't flip to empty state;
+    // the error message will surface in the sync line.
     return res.status(500).json({ connected: true, error: err.message });
   }
 }
