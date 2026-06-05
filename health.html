@@ -521,30 +521,58 @@ main {
 .w-seg button.active { background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; }
 .w-modal-done { width: 100%; margin-top: 14px; padding: 13px; background: linear-gradient(180deg, #fff 0%, #e8e5dd 100%); color: #0a0a0b; border: none; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,0.55), 0 4px 14px rgba(0,0,0,0.40); }
 
-/* ===== FITNESS BAND SECTION ===== */
+/* ===== FITNESS BAND — WHOOP-STYLE CARD ===== */
 .fb-section { margin-bottom: 32px; }
+
+/* ── Card shell ── */
+.fb-card {
+  background: #0e0e10;
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.55);
+}
+
+/* ── Card header ── */
+.fb-card-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.fb-brand-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(110,231,183,0.7);
+  animation: fb-pulse 2s ease-in-out infinite;
+}
+@keyframes fb-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.85)} }
+.fb-brand-name {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 800;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--text-primary);
+}
 .fb-connect-btn {
   margin-left: auto;
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--accent); border: 1px solid rgba(29,158,117,0.30);
-  background: rgba(29,158,117,0.08); padding: 4px 12px;
+  background: rgba(29,158,117,0.08); padding: 5px 13px;
   border-radius: 999px; text-decoration: none; transition: background 0.15s;
+  white-space: nowrap;
 }
 .fb-connect-btn:hover { background: rgba(29,158,117,0.16); }
-.fb-connect-btn.danger { color: var(--warning); border-color: rgba(255,138,77,0.30); background: rgba(255,138,77,0.08); }
-.fb-card {
-  background: var(--bg-card); border-radius: 16px; padding: 22px 22px 18px;
-  backdrop-filter: blur(24px) saturate(1.2); -webkit-backdrop-filter: blur(24px) saturate(1.2);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-}
+.fb-connect-btn.danger { color: #FF8A8A; border-color: rgba(255,138,138,0.30); background: rgba(255,138,138,0.07); }
+
+/* ── Padding wrapper for body content ── */
+.fb-body { padding: 16px 18px 18px; }
+
+/* ── Empty / not-connected state ── */
 .fb-empty {
   display: flex; flex-direction: column; align-items: center;
-  padding: 24px 0 16px; gap: 12px; text-align: center;
+  padding: 28px 0 20px; gap: 12px; text-align: center;
 }
-.fb-empty-icon { font-size: 36px; opacity: 0.3; }
+.fb-empty-icon { font-size: 34px; opacity: 0.28; }
 .fb-empty-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
-.fb-empty-desc { font-size: 12px; color: var(--text-tertiary); max-width: 260px; line-height: 1.5; }
+.fb-empty-desc { font-size: 12px; color: var(--text-tertiary); max-width: 256px; line-height: 1.5; }
 .fb-connect-big {
   display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px;
   border-radius: 12px; background: linear-gradient(180deg,#fff 0%,#e8e5dd 100%);
@@ -553,54 +581,112 @@ main {
   transition: transform 0.12s; font-family: inherit; border: none; cursor: pointer;
 }
 .fb-connect-big:hover { transform: translateY(-1px); }
+
+/* ── Live ticker ── */
 .fb-ticker {
-  display: flex; align-items: center; gap: 10px; padding: 7px 12px; margin-bottom: 16px;
-  background: rgba(0,0,0,0.28); border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 10px; overflow: hidden;
-}
-.fb-ticker-label {
-  font-family: var(--font-mono); font-size: 9px; font-weight: 800;
-  letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary); flex-shrink: 0;
+  display: flex; align-items: center; gap: 9px;
+  padding: 6px 10px; margin-bottom: 16px;
+  background: rgba(0,0,0,0.32); border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px; overflow: hidden;
 }
 .fb-ticker-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: fb-pulse 2s ease-in-out infinite; }
-@keyframes fb-pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-.fb-ticker-stage { flex: 1; overflow: hidden; height: 18px; position: relative; }
-.fb-ticker-text {
-  position: absolute; white-space: nowrap; top: 0; left: 0;
-  font-family: var(--font-mono); font-size: 11px; font-weight: 600;
-  color: var(--text-secondary); letter-spacing: 0.04em;
-}
-.fb-top { display: flex; gap: 20px; align-items: flex-start; margin-bottom: 16px; }
+.fb-ticker-label { font-family: var(--font-mono); font-size: 9px; font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; color: var(--text-tertiary); flex-shrink: 0; }
+.fb-ticker-stage { flex: 1; overflow: hidden; height: 17px; position: relative; }
+.fb-ticker-text { position: absolute; white-space: nowrap; top: 0; left: 0; font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--text-secondary); letter-spacing: 0.04em; }
+
+/* ── Recovery ring + status ── */
+.fb-top { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 18px; }
 .fb-ring-wrap { flex-shrink: 0; }
-.fb-ring { position: relative; width: 110px; height: 110px; }
+.fb-ring { position: relative; width: 108px; height: 108px; }
 .fb-ring svg { width: 100%; height: 100%; display: block; transform: rotate(-90deg); }
 .fb-ring-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 9; }
-.fb-ring-fill { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 1s cubic-bezier(0.22,1,0.36,1), stroke 0.6s; }
+.fb-ring-fill { fill: none; stroke-width: 9; stroke-linecap: round; transition: stroke-dashoffset 1.1s cubic-bezier(0.22,1,0.36,1), stroke 0.6s; }
 .fb-ring-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.fb-ring-pct { font-size: 28px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+.fb-ring-pct { font-size: 27px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
 .fb-ring-lbl { font-family: var(--font-mono); font-size: 8px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-top: 2px; }
-.fb-status { flex: 1; min-width: 0; }
-.fb-status-head { font-size: 17px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.018em; margin-bottom: 3px; }
-.fb-status-sub { font-size: 12px; color: var(--text-tertiary); line-height: 1.45; margin-bottom: 10px; }
+.fb-status { flex: 1; min-width: 0; padding-top: 2px; }
+.fb-status-head { font-size: 16px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.018em; margin-bottom: 3px; }
+.fb-status-sub { font-size: 11.5px; color: var(--text-tertiary); line-height: 1.45; margin-bottom: 12px; }
 .fb-sleep-row { display: flex; align-items: baseline; gap: 4px; }
-.fb-sleep-num { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); }
+.fb-sleep-num { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); }
 .fb-sleep-unit { font-size: 13px; color: var(--text-tertiary); }
-.fb-sleep-sub { font-size: 11px; color: var(--text-quaternary); margin-top: 2px; font-family: var(--font-mono); }
-.fb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.fb-stat { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 14px; }
-.fb-stat-lbl { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 6px; }
-.fb-stat-val { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
-.fb-stat-unit { font-size: 11px; color: var(--text-tertiary); margin-left: 2px; font-weight: 400; }
+.fb-sleep-sub { font-size: 10.5px; color: var(--text-quaternary); margin-top: 3px; font-family: var(--font-mono); }
+
+/* ── Sleep stages bar ── */
+.fb-stages-wrap { margin-bottom: 18px; }
+.fb-stages-lbl { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 7px; }
+.fb-stages-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; gap: 2px; margin-bottom: 9px; }
+.fb-stage-seg { height: 100%; border-radius: 3px; min-width: 3px; transition: flex 0.7s cubic-bezier(0.22,1,0.36,1); }
+.fb-stage-rem   { background: #7C3AED; }
+.fb-stage-deep  { background: #2563EB; }
+.fb-stage-light { background: #0EA5E9; }
+.fb-stage-awake { background: rgba(255,255,255,0.18); }
+.fb-stages-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.fb-legend-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: var(--text-tertiary); }
+.fb-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+
+/* ── Stats grid (2×2 with zone dots) ── */
+.fb-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 16px; }
+.fb-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 11px 13px;
+  position: relative;
+}
+.fb-stat-lbl { font-family: var(--font-mono); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 5px; }
+.fb-stat-val { font-size: 21px; font-weight: 800; letter-spacing: -0.03em; color: var(--text-primary); font-variant-numeric: tabular-nums; line-height: 1; }
+.fb-stat-unit { font-size: 10px; color: var(--text-tertiary); margin-left: 2px; font-weight: 400; }
 .fb-stat-sub { font-size: 10px; color: var(--text-tertiary); margin-top: 4px; font-family: var(--font-mono); }
-.fb-debt-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
-.fb-debt-lbl { font-family: var(--font-mono); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-tertiary); }
-.fb-debt-val { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--text-primary); }
-.fb-debt-track { height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; }
-.fb-debt-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; background: linear-gradient(90deg,var(--accent),#7DD3FC); }
-.fb-debt-fill.warn { background: linear-gradient(90deg,var(--warning),#FFC06B); }
-.fb-sync { text-align: right; font-family: var(--font-mono); font-size: 10px; color: var(--text-quaternary); margin-top: 12px; }
-@media (max-width:600px) { .fb-card{padding:18px 16px 14px;} .fb-ring{width:90px;height:90px;} .fb-ring-pct{font-size:23px;} }
-@media (max-width:480px) { .fb-top{flex-direction:column;} .fb-ring-wrap{display:flex;gap:16px;align-items:center;} .fb-ring{width:84px;height:84px;} }
+.fb-stat-dot { position: absolute; top: 11px; right: 12px; width: 8px; height: 8px; border-radius: 50%; }
+.fb-dot-green { background: #6EE7B7; box-shadow: 0 0 7px rgba(110,231,183,0.65); }
+.fb-dot-amber { background: #F2C063; box-shadow: 0 0 7px rgba(242,192,99,0.65); }
+.fb-dot-red   { background: #FF8A8A; box-shadow: 0 0 7px rgba(255,138,138,0.65); }
+
+/* ── Biomarker strip ── */
+.fb-bio {
+  display: flex; gap: 0; margin-bottom: 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px; overflow: hidden;
+}
+.fb-bio-item {
+  flex: 1; padding: 10px 12px;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+.fb-bio-item:last-child { border-right: none; }
+.fb-bio-lbl { font-family: var(--font-mono); font-size: 8.5px; font-weight: 700; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 4px; }
+.fb-bio-val { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.fb-bio-unit { font-size: 10px; color: var(--text-tertiary); margin-left: 2px; }
+
+/* ── Verdict card ── */
+.fb-verdict {
+  display: flex; gap: 0; border-radius: 12px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.025);
+  margin-bottom: 14px;
+}
+.fb-verdict-accent { width: 4px; flex-shrink: 0; background: #6EE7B7; transition: background 0.6s; }
+.fb-verdict-body { flex: 1; padding: 12px 14px; }
+.fb-verdict-title { font-family: var(--font-mono); font-size: 9px; font-weight: 800; letter-spacing: 0.20em; text-transform: uppercase; color: var(--text-tertiary); margin-bottom: 5px; }
+.fb-verdict-text { font-size: 13px; font-weight: 500; color: var(--text-primary); line-height: 1.5; }
+
+/* ── Sync line ── */
+.fb-sync { text-align: right; font-family: var(--font-mono); font-size: 10px; color: var(--text-quaternary); }
+
+/* ── Responsive ── */
+@media (max-width:600px) {
+  .fb-body { padding: 14px 14px 16px; }
+  .fb-ring { width: 92px; height: 92px; }
+  .fb-ring-pct { font-size: 22px; }
+  .fb-sleep-num { font-size: 26px; }
+}
+@media (max-width:480px) {
+  .fb-top { flex-direction: column; }
+  .fb-ring-wrap { display: flex; gap: 16px; align-items: center; }
+  .fb-ring { width: 84px; height: 84px; }
+  .fb-bio-item { padding: 9px 10px; }
+  .fb-bio-val { font-size: 13px; }
+}
 
 </style>
 </head>
@@ -609,104 +695,145 @@ main {
 <main>
   <!-- ===== FITNESS BAND ===== -->
   <section class="fb-section" id="fbSection">
-    <div class="section-title">Fitness Band
-      <a href="/api/fitbit/login" class="fb-connect-btn" id="fbConnectBtn">Connect</a>
-    </div>
 
     <div class="fb-card" id="fbCard">
 
-      <!-- Empty / not-connected state -->
-      <div class="fb-empty" id="fbEmpty">
-        <div class="fb-empty-icon">💪</div>
-        <div class="fb-empty-title">No fitness band connected</div>
-        <div class="fb-empty-desc">Connect Google Health to sync recovery, sleep, HRV, and strain automatically from your Fitbit.</div>
-        <a href="/api/fitbit/login" class="fb-connect-big">Connect Google Health</a>
+      <!-- Card header — always visible -->
+      <div class="fb-card-header">
+        <span class="fb-brand-dot"></span>
+        <span class="fb-brand-name">Fitbit Air</span>
+        <a href="/api/fitbit/login" class="fb-connect-btn" id="fbConnectBtn">Connect Fitbit Air</a>
       </div>
 
-      <!-- Loading -->
-      <div id="fbLoading" style="display:none;text-align:center;padding:24px 0;color:var(--text-tertiary);font-size:13px;">Syncing…</div>
-
-      <!-- Connected / data state -->
-      <div id="fbData" style="display:none">
-
-        <!-- Live ticker -->
-        <div class="fb-ticker">
-          <span class="fb-ticker-dot"></span>
-          <span class="fb-ticker-label">LIVE</span>
-          <div class="fb-ticker-stage">
-            <span class="fb-ticker-text" id="fbTickerText">RECOVERY · HRV · RHR · SLEEP · STRAIN</span>
-          </div>
+      <!-- Empty / not-connected state -->
+      <div class="fb-body">
+        <div class="fb-empty" id="fbEmpty">
+          <div class="fb-empty-icon">💪</div>
+          <div class="fb-empty-title">Fitbit Air not connected</div>
+          <div class="fb-empty-desc">Connect Google Health to sync recovery, sleep, HRV, and strain from your Fitbit Air.</div>
+          <a href="/api/fitbit/login" class="fb-connect-big">Connect Fitbit Air</a>
         </div>
 
-        <!-- Recovery ring + sleep summary -->
-        <div class="fb-top">
-          <div class="fb-ring-wrap">
-            <div class="fb-ring">
-              <svg viewBox="0 0 120 120">
-                <defs>
-                  <filter id="fbGlow">
-                    <feGaussianBlur stdDeviation="2" result="b"/>
-                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-                <circle class="fb-ring-track" cx="60" cy="60" r="50"/>
-                <circle class="fb-ring-fill" id="fbRingFill" cx="60" cy="60" r="50"
-                  stroke="#6EE7B7" stroke-dasharray="314.16" stroke-dashoffset="314.16"
-                  filter="url(#fbGlow)"/>
-              </svg>
-              <div class="fb-ring-overlay">
-                <span class="fb-ring-pct" id="fbRecoveryPct">—</span>
-                <span class="fb-ring-lbl">Recovery</span>
+        <!-- Loading -->
+        <div id="fbLoading" style="display:none;text-align:center;padding:22px 0;color:var(--text-tertiary);font-size:13px;">Syncing…</div>
+
+        <!-- Connected / data state -->
+        <div id="fbData" style="display:none">
+
+          <!-- Live ticker -->
+          <div class="fb-ticker">
+            <span class="fb-ticker-dot"></span>
+            <span class="fb-ticker-label">LIVE</span>
+            <div class="fb-ticker-stage">
+              <span class="fb-ticker-text" id="fbTickerText">RECOVERY · HRV · RHR · SLEEP · STRAIN</span>
+            </div>
+          </div>
+
+          <!-- Recovery ring + status -->
+          <div class="fb-top">
+            <div class="fb-ring-wrap">
+              <div class="fb-ring">
+                <svg viewBox="0 0 120 120">
+                  <defs>
+                    <filter id="fbGlow">
+                      <feGaussianBlur stdDeviation="2.5" result="b"/>
+                      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                    </filter>
+                  </defs>
+                  <circle class="fb-ring-track" cx="60" cy="60" r="50"/>
+                  <circle class="fb-ring-fill" id="fbRingFill" cx="60" cy="60" r="50"
+                    stroke="#6EE7B7" stroke-dasharray="314.16" stroke-dashoffset="314.16"
+                    filter="url(#fbGlow)"/>
+                </svg>
+                <div class="fb-ring-overlay">
+                  <span class="fb-ring-pct" id="fbRecoveryPct">—</span>
+                  <span class="fb-ring-lbl">Recovery</span>
+                </div>
               </div>
             </div>
-          </div>
-          <div class="fb-status">
-            <div class="fb-status-head" id="fbStatusHead">—</div>
-            <div class="fb-status-sub" id="fbStatusSub"></div>
-            <div class="fb-sleep-row">
-              <span class="fb-sleep-num" id="fbSleepNum">—</span>
-              <span class="fb-sleep-unit">hrs</span>
+            <div class="fb-status">
+              <div class="fb-status-head" id="fbStatusHead">—</div>
+              <div class="fb-status-sub" id="fbStatusSub"></div>
+              <div class="fb-sleep-row">
+                <span class="fb-sleep-num" id="fbSleepNum">—</span>
+                <span class="fb-sleep-unit">hrs</span>
+              </div>
+              <div class="fb-sleep-sub" id="fbSleepSub"></div>
             </div>
-            <div class="fb-sleep-sub" id="fbSleepSub"></div>
           </div>
-        </div>
 
-        <!-- Stat cards -->
-        <div class="fb-stats">
-          <div class="fb-stat">
-            <div class="fb-stat-lbl">HRV</div>
-            <div class="fb-stat-val"><span id="fbHrv">—</span><span class="fb-stat-unit">ms</span></div>
-            <div class="fb-stat-sub" id="fbHrvSub"></div>
+          <!-- Sleep stages bar -->
+          <div class="fb-stages-wrap">
+            <div class="fb-stages-lbl">Sleep Stages</div>
+            <div class="fb-stages-bar" id="fbStagesBar">
+              <div class="fb-stage-seg fb-stage-rem"   id="fbStageRem"   style="flex:1"></div>
+              <div class="fb-stage-seg fb-stage-deep"  id="fbStageDeep"  style="flex:1"></div>
+              <div class="fb-stage-seg fb-stage-light" id="fbStageLight" style="flex:3"></div>
+              <div class="fb-stage-seg fb-stage-awake" id="fbStageAwake" style="flex:1"></div>
+            </div>
+            <div class="fb-stages-legend">
+              <div class="fb-legend-item"><div class="fb-legend-dot" style="background:#7C3AED"></div><span id="fbLegRem">REM</span></div>
+              <div class="fb-legend-item"><div class="fb-legend-dot" style="background:#2563EB"></div><span id="fbLegDeep">Deep</span></div>
+              <div class="fb-legend-item"><div class="fb-legend-dot" style="background:#0EA5E9"></div><span id="fbLegLight">Light</span></div>
+              <div class="fb-legend-item"><div class="fb-legend-dot" style="background:rgba(255,255,255,0.25)"></div><span id="fbLegAwake">Awake</span></div>
+            </div>
           </div>
-          <div class="fb-stat">
-            <div class="fb-stat-lbl">Resting HR</div>
-            <div class="fb-stat-val"><span id="fbRhr">—</span><span class="fb-stat-unit">bpm</span></div>
-            <div class="fb-stat-sub" id="fbRhrSub"></div>
-          </div>
-          <div class="fb-stat">
-            <div class="fb-stat-lbl">Sleep Perf</div>
-            <div class="fb-stat-val"><span id="fbSleepPerf">—</span><span class="fb-stat-unit">%</span></div>
-            <div class="fb-stat-sub" id="fbSleepPerfSub"></div>
-          </div>
-          <div class="fb-stat">
-            <div class="fb-stat-lbl">Strain</div>
-            <div class="fb-stat-val"><span id="fbStrain">—</span><span class="fb-stat-unit">/21</span></div>
-            <div class="fb-stat-sub" id="fbStrainSub"></div>
-          </div>
-        </div>
 
-        <!-- Sleep debt bar -->
-        <div>
-          <div class="fb-debt-head">
-            <span class="fb-debt-lbl">7-Day Sleep Debt</span>
-            <span class="fb-debt-val" id="fbDebtVal">—</span>
+          <!-- Stats grid -->
+          <div class="fb-stats">
+            <div class="fb-stat">
+              <div class="fb-stat-dot" id="fbDotSleep"></div>
+              <div class="fb-stat-lbl">Sleep</div>
+              <div class="fb-stat-val"><span id="fbStatSleep">—</span><span class="fb-stat-unit">h</span></div>
+              <div class="fb-stat-sub" id="fbStatSleepSub"></div>
+            </div>
+            <div class="fb-stat">
+              <div class="fb-stat-dot" id="fbDotStrain"></div>
+              <div class="fb-stat-lbl">Strain</div>
+              <div class="fb-stat-val"><span id="fbStrain">—</span><span class="fb-stat-unit">/21</span></div>
+              <div class="fb-stat-sub" id="fbStrainSub"></div>
+            </div>
+            <div class="fb-stat">
+              <div class="fb-stat-dot" id="fbDotHrv"></div>
+              <div class="fb-stat-lbl">HRV</div>
+              <div class="fb-stat-val"><span id="fbHrv">—</span><span class="fb-stat-unit">ms</span></div>
+              <div class="fb-stat-sub" id="fbHrvSub"></div>
+            </div>
+            <div class="fb-stat">
+              <div class="fb-stat-dot" id="fbDotRhr"></div>
+              <div class="fb-stat-lbl">Resting HR</div>
+              <div class="fb-stat-val"><span id="fbRhr">—</span><span class="fb-stat-unit">bpm</span></div>
+              <div class="fb-stat-sub" id="fbRhrSub"></div>
+            </div>
           </div>
-          <div class="fb-debt-track">
-            <div class="fb-debt-fill" id="fbDebtFill" style="width:0%"></div>
-          </div>
-        </div>
 
-        <div class="fb-sync" id="fbSync"></div>
+          <!-- Biomarker strip -->
+          <div class="fb-bio">
+            <div class="fb-bio-item">
+              <div class="fb-bio-lbl">Skin Temp</div>
+              <div class="fb-bio-val"><span id="fbSkinTemp">—</span></div>
+            </div>
+            <div class="fb-bio-item">
+              <div class="fb-bio-lbl">Blood O₂</div>
+              <div class="fb-bio-val"><span id="fbBloodO2">—</span></div>
+            </div>
+            <div class="fb-bio-item">
+              <div class="fb-bio-lbl">Resp Rate</div>
+              <div class="fb-bio-val"><span id="fbRespRate">—</span></div>
+            </div>
+          </div>
+
+          <!-- Today's call verdict card -->
+          <div class="fb-verdict">
+            <div class="fb-verdict-accent" id="fbVerdictAccent"></div>
+            <div class="fb-verdict-body">
+              <div class="fb-verdict-title">Today's Call</div>
+              <div class="fb-verdict-text" id="fbVerdictText">—</div>
+            </div>
+          </div>
+
+          <div class="fb-sync" id="fbSync"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -1579,12 +1706,26 @@ document.addEventListener('DOMContentLoaded', function () {
     $s('fbData').style.display    = state === 'data'    ? '' : 'none';
   }
 
+  function dotClass(zone) { return 'fb-stat-dot fb-dot-' + zone; }
+  function sleepZone(h)  { return h >= 7 ? 'green' : h >= 5 ? 'amber' : 'red'; }
+  function strainZone(s) { return s <= 13 ? 'green' : s <= 17 ? 'amber' : 'red'; }
+  function hrvZone(h)    { return h >= 50 ? 'green' : h >= 30 ? 'amber' : 'red'; }
+  function rhrZone(r)    { return r <= 60 ? 'green' : r <= 70 ? 'amber' : 'red'; }
+
+  var VERDICTS = {
+    green: 'Go hard — your recovery is in the green zone. Push your session today.',
+    amber: 'Steady effort — recovery in the yellow zone. Moderate intensity recommended.',
+    red:   'Rest day — recovery in the red zone. Prioritize sleep and light movement only.',
+  };
+  var VERDICT_COLORS = { green: '#6EE7B7', amber: '#F2C063', red: '#FF8A8A' };
+
   function renderData(d) {
     showState('data');
 
-    // Ring
+    // ── Recovery ring ──────────────────────────────────────────────────────
     var pct   = Math.round(d.recovery || 0);
     var color = ringColor(pct);
+    var zone  = pct >= 67 ? 'green' : pct >= 34 ? 'amber' : 'red';
     var fill  = $s('fbRingFill');
     if (fill) {
       fill.setAttribute('stroke', color);
@@ -1593,55 +1734,79 @@ document.addEventListener('DOMContentLoaded', function () {
     var pctEl = $s('fbRecoveryPct');
     if (pctEl) { pctEl.textContent = pct + '%'; pctEl.style.color = color; }
 
-    // Status copy
+    // ── Status ─────────────────────────────────────────────────────────────
     var st = statusText(pct);
     set('fbStatusHead', st.head);
     set('fbStatusSub', st.sub);
-
-    // Sleep
     set('fbSleepNum', d.sleepHours || '—');
     set('fbSleepSub', (d.bedtime && d.wakeTime && d.bedtime !== '—') ? d.bedtime + ' → ' + d.wakeTime : '');
 
-    // Stat cards
-    set('fbHrv', d.hrv || '—');
-    set('fbHrvSub', d.hrv ? (d.hrv >= 50 ? 'Optimal' : d.hrv >= 30 ? 'Moderate' : 'Low') : '');
-    set('fbRhr', d.rhr || '—');
-    set('fbRhrSub', d.rhr ? (d.rhr <= 55 ? 'Excellent' : d.rhr <= 65 ? 'Good' : 'Elevated') : '');
-    set('fbSleepPerf', d.sleepPerf != null ? d.sleepPerf : '—');
-    set('fbSleepPerfSub', d.sleepPerf ? d.sleepPerf + '% of ' + (d.sleepTargetHours || 8) + 'h target' : '');
-    set('fbStrain', d.strain != null ? d.strain : '—');
-    set('fbStrainSub', d.calories ? Math.round(d.calories) + ' kcal active' : '');
-
-    // Sleep debt
-    var debt = d.sleepDebt || 0;
-    set('fbDebtVal', debt > 0 ? debt.toFixed(1) + ' hrs' : 'None ✓');
-    var debtFill = $s('fbDebtFill');
-    if (debtFill) {
-      debtFill.style.width = Math.min(100, (debt / 14) * 100).toFixed(1) + '%';
-      debtFill.className = 'fb-debt-fill' + (debt > 5 ? ' warn' : '');
+    // ── Sleep stages bar ───────────────────────────────────────────────────
+    var rem   = d.stageRem   || 0;
+    var deep  = d.stageDeep  || 0;
+    var light = d.stageLight || 0;
+    var wake  = d.stageWake  || 0;
+    var total = rem + deep + light + wake || 1;
+    var segR = $s('fbStageRem'),   segD = $s('fbStageDeep');
+    var segL = $s('fbStageLight'), segW = $s('fbStageAwake');
+    if (segR) segR.style.flex = String(rem   / total);
+    if (segD) segD.style.flex = String(deep  / total);
+    if (segL) segL.style.flex = String(light / total);
+    if (segW) segW.style.flex = String(wake  / total);
+    // Legend labels with percentages
+    if (rem || deep || light || wake) {
+      set('fbLegRem',   'REM '   + Math.round(rem   / total * 100) + '%');
+      set('fbLegDeep',  'Deep '  + Math.round(deep  / total * 100) + '%');
+      set('fbLegLight', 'Light ' + Math.round(light / total * 100) + '%');
+      set('fbLegAwake', 'Awake ' + Math.round(wake  / total * 100) + '%');
     }
 
-    // Ticker — scrolling marquee of all metrics
+    // ── Stats grid with zone dots ──────────────────────────────────────────
+    var sh = d.sleepHours || 0;
+    var dotSleep = $s('fbDotSleep'); if (dotSleep) dotSleep.className = dotClass(sleepZone(sh));
+    set('fbStatSleep', sh || '—');
+    set('fbStatSleepSub', sh ? sh + 'h of ' + (d.sleepTargetHours || 8) + 'h target' : '');
+
+    var dotStrain = $s('fbDotStrain'); if (dotStrain) dotStrain.className = dotClass(strainZone(d.strain || 0));
+    set('fbStrain', d.strain != null ? d.strain : '—');
+    set('fbStrainSub', d.calories ? Math.round(d.calories) + ' kcal' : '');
+
+    var dotHrv = $s('fbDotHrv'); if (dotHrv) dotHrv.className = dotClass(d.hrv ? hrvZone(d.hrv) : 'amber');
+    set('fbHrv', d.hrv || '—');
+    set('fbHrvSub', d.hrv ? (d.hrv >= 50 ? 'Optimal' : d.hrv >= 30 ? 'Moderate' : 'Low') : '');
+
+    var dotRhr = $s('fbDotRhr'); if (dotRhr) dotRhr.className = dotClass(d.rhr ? rhrZone(d.rhr) : 'amber');
+    set('fbRhr', d.rhr || '—');
+    set('fbRhrSub', d.rhr ? (d.rhr <= 55 ? 'Excellent' : d.rhr <= 65 ? 'Good' : 'Elevated') : '');
+
+    // ── Biomarkers (not available from Google Fit — show dash) ────────────
+    set('fbSkinTemp',  d.skinTemp  ? d.skinTemp  + '°F' : '—');
+    set('fbBloodO2',   d.bloodO2   ? d.bloodO2   + '%'  : '—');
+    set('fbRespRate',  d.respRate  ? d.respRate  + '/min': '—');
+
+    // ── Verdict card ───────────────────────────────────────────────────────
+    set('fbVerdictText', VERDICTS[zone]);
+    var accent = $s('fbVerdictAccent');
+    if (accent) accent.style.background = VERDICT_COLORS[zone];
+
+    // ── Ticker ────────────────────────────────────────────────────────────
     var parts = [
       'RECOVERY ' + pct + '%',
-      d.hrv  ? 'HRV ' + d.hrv + ' ms'   : null,
-      d.rhr  ? 'RHR ' + d.rhr + ' bpm'  : null,
-      d.sleepHours ? 'SLEEP ' + d.sleepHours + ' h' : null,
+      d.hrv        ? 'HRV '   + d.hrv        + ' ms'  : null,
+      d.rhr        ? 'RHR '   + d.rhr        + ' bpm' : null,
+      d.sleepHours ? 'SLEEP ' + d.sleepHours + ' h'   : null,
       d.strain != null ? 'STRAIN ' + d.strain : null,
-      d.steps ? 'STEPS ' + Number(d.steps).toLocaleString() : null,
-      d.calories ? 'CALORIES ' + Math.round(d.calories) : null,
+      d.steps      ? 'STEPS ' + Number(d.steps).toLocaleString() : null,
     ].filter(Boolean).join('   ·   ');
     var ticker = $s('fbTickerText');
     if (ticker) {
       ticker.textContent = parts;
-      // Animate: scroll from right to left and loop
       ticker.style.animation = 'none';
-      ticker.offsetWidth; // reflow
-      var duration = Math.max(14, Math.round(parts.length / 5)) + 's';
-      ticker.style.animation = 'fb-ticker-scroll ' + duration + ' linear infinite';
+      ticker.offsetWidth;
+      ticker.style.animation = 'fb-ticker-scroll ' + Math.max(14, Math.round(parts.length / 5)) + 's linear infinite';
     }
 
-    // Sync time or error
+    // ── Sync / error line ─────────────────────────────────────────────────
     if (d.error) {
       set('fbSync', '⚠ ' + d.error);
     } else if (d.syncedAt) {
@@ -1649,23 +1814,15 @@ document.addEventListener('DOMContentLoaded', function () {
       set('fbSync', 'Synced ' + t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
     }
 
-    // Update header button to Disconnect
+    // ── Header button → Disconnect ────────────────────────────────────────
     var btn = $s('fbConnectBtn');
-    if (btn) {
-      btn.href = '/api/fitbit/logout';
-      btn.textContent = 'Disconnect';
-      btn.classList.add('danger');
-    }
+    if (btn) { btn.href = '/api/fitbit/logout'; btn.textContent = 'Disconnect'; btn.classList.add('danger'); }
   }
 
   function renderEmpty() {
     showState('empty');
     var btn = $s('fbConnectBtn');
-    if (btn) {
-      btn.href = '/api/fitbit/login';
-      btn.textContent = 'Connect';
-      btn.classList.remove('danger');
-    }
+    if (btn) { btn.href = '/api/fitbit/login'; btn.textContent = 'Connect Fitbit Air'; btn.classList.remove('danger'); }
   }
 
   async function fbLoad() {
