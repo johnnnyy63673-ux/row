@@ -1,23 +1,20 @@
 // api/fitbit/data.js
-// Fetches today's health metrics directly from the Fitbit Web API.
-// Automatically refreshes the access token if it has expired.
+// Fetches health metrics from the Google Fitness REST API using Google OAuth
+// tokens obtained via GOOGLE_HEALTH_CLIENT_ID / GOOGLE_HEALTH_CLIENT_SECRET.
 //
-// Fitbit endpoints used:
-//   /1.2/user/-/sleep/date/{date}.json          — sleep duration, efficiency, stages
-//   /1/user/-/activities/heart/date/{date}/1d   — resting heart rate
-//   /1/user/-/hrv/date/{date}.json              — HRV (RMSSD)
-//   /1/user/-/activities/date/{date}.json       — steps, calories
+// Google Fitness endpoints used:
+//   GET  /fitness/v1/users/me/sessions          — sleep sessions (activityType=72)
+//   POST /fitness/v1/users/me/dataset:aggregate — heart rate, HRV, steps, calories
 //
 // Returns: { connected, recovery, hrv, rhr, sleepHours, sleepPerf,
 //            sleepTargetHours, bedtime, wakeTime, strain, calories,
-//            steps, sleepDebt, stageDeep, stageRem, stageLight,
-//            stageWake, syncedAt }
+//            steps, sleepDebt, syncedAt }
 
 const TOKEN_KEY    = 'google_health_tokens';
-const FITBIT       = 'https://api.fitbit.com';
+const FIT_BASE     = 'https://www.googleapis.com/fitness/v1/users/me';
 const SLEEP_TARGET = 8;
 
-// ── Supabase ──────────────────────────────────────────────────────────────────
+// ── Supabase helpers ──────────────────────────────────────────────────────────
 
 async function getTokens(supabaseUrl, supabaseKey) {
   const res = await fetch(
@@ -45,20 +42,17 @@ async function saveTokens(supabaseUrl, supabaseKey, tokens) {
   });
 }
 
-// ── Fitbit OAuth token refresh ────────────────────────────────────────────────
+// ── Google OAuth token refresh ────────────────────────────────────────────────
 
 async function refreshAccessToken(tokens) {
-  const clientId     = process.env.GOOGLE_HEALTH_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_HEALTH_CLIENT_SECRET;
-
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method:  'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type:    'refresh_token',
       refresh_token: tokens.refresh_token,
-      client_id:     clientId,
-      client_secret: clientSecret,
+      client_id:     process.env.GOOGLE_HEALTH_CLIENT_ID,
+      client_secret: process.env.GOOGLE_HEALTH_CLIENT_SECRET,
     }),
   });
   const data = await res.json();
@@ -72,34 +66,94 @@ async function refreshAccessToken(tokens) {
   };
 }
 
-// ── Fitbit REST GET ───────────────────────────────────────────────────────────
+// ── Google Fitness REST helpers ───────────────────────────────────────────────
 
-async function fitGet(endpoint, accessToken) {
-  const res = await fetch(`${FITBIT}${endpoint}`, {
-    headers: { 'Authorization': `Bearer ${accessToken}` },
+async function fitGet(path, at) {
+  const res = await fetch(`${FIT_BASE}${path}`, {
+    headers: { 'Authorization': `Bearer ${at}` },
   });
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    const msg  = body.errors?.[0]?.message || res.status;
-    throw new Error(`Fitbit ${endpoint} → ${msg}`);
+    throw new Error(`GET ${path} → ${res.status} ${JSON.stringify(body?.error?.message || body)}`);
   }
   return res.json();
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+async function fitAggregate(body, at) {
+  const res = await fetch(`${FIT_BASE}/dataset:aggregate`, {
+    method:  'POST',
+    headers: { 'Authorization': `Bearer ${at}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(`aggregate → ${res.status} ${JSON.stringify(errBody?.error?.message || errBody)}`);
+  }
+  return res.json();
+}
 
-// Parse Fitbit local-time string "2026-06-04T07:30:00.000" without timezone
-// conversion (Fitbit times are already in the user's local time).
-function fmtFitbitTime(s) {
-  if (!s) return '—';
-  const m = s.match(/T(\d{1,2}):(\d{2})/);
-  if (!m) return '—';
-  let h = parseInt(m[1], 10);
-  const min  = m[2];
-  const ampm = h >= 12 ? 'PM' : 'AM';
-  if (h === 0) h = 12;
-  else if (h > 12) h -= 12;
-  return `${h}:${min} ${ampm}`;
+// ── Data parsing helpers ──────────────────────────────────────────────────────
+
+// Minimum fp value across all buckets (used for resting HR)
+function parseFpMin(buckets) {
+  let min = null;
+  for (const b of (buckets || [])) {
+    for (const ds of (b.dataset || [])) {
+      for (const pt of (ds.point || [])) {
+        for (const v of (pt.value || [])) {
+          if (v.fpVal > 30 && v.fpVal < 200) {
+            min = min === null ? v.fpVal : Math.min(min, v.fpVal);
+          }
+        }
+      }
+    }
+  }
+  return min ? Math.round(min) : 0;
+}
+
+// Average fp value across all buckets (used for HRV)
+function parseFpAvg(buckets) {
+  let sum = 0, n = 0;
+  for (const b of (buckets || [])) {
+    for (const ds of (b.dataset || [])) {
+      for (const pt of (ds.point || [])) {
+        for (const v of (pt.value || [])) {
+          if (v.fpVal) { sum += v.fpVal; n++; }
+        }
+      }
+    }
+  }
+  return n ? Math.round(sum / n) : 0;
+}
+
+// Sum of integer values (steps)
+function parseIntSum(buckets) {
+  let total = 0;
+  for (const b of (buckets || [])) {
+    for (const ds of (b.dataset || [])) {
+      for (const pt of (ds.point || [])) {
+        for (const v of (pt.value || [])) { total += (v.intVal || 0); }
+      }
+    }
+  }
+  return total;
+}
+
+// Sum of fp values (calories)
+function parseFpSum(buckets) {
+  let total = 0;
+  for (const b of (buckets || [])) {
+    for (const ds of (b.dataset || [])) {
+      for (const pt of (ds.point || [])) {
+        for (const v of (pt.value || [])) { total += (v.fpVal || 0); }
+      }
+    }
+  }
+  return Math.round(total);
+}
+
+function fmtMs(ms) {
+  return new Date(ms).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 }
 
 // ── Main handler ──────────────────────────────────────────────────────────────
@@ -113,11 +167,10 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Supabase not configured' });
   }
 
-  // Load stored tokens
   let tokens = await getTokens(supabaseUrl, supabaseKey);
   if (!tokens) return res.status(401).json({ connected: false });
 
-  // Refresh if expiring within 5 minutes
+  // Refresh token if expiring within 5 minutes
   if (tokens.expires_at < Date.now() + 300_000) {
     try {
       tokens = await refreshAccessToken(tokens);
@@ -127,79 +180,89 @@ export default async function handler(req, res) {
     }
   }
 
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-  const at    = tokens.access_token;
+  const now    = Date.now();
+  const dayAgo = now - 86_400_000;
+  const at     = tokens.access_token;
 
   try {
-    // Fetch all four endpoints in parallel; HRV is optional (not all devices support it)
-    const [sleepData, hrData, actData, hrvData] = await Promise.all([
-      fitGet(`/1.2/user/-/sleep/date/${today}.json`, at),
-      fitGet(`/1/user/-/activities/heart/date/${today}/1d.json`, at),
-      fitGet(`/1/user/-/activities/date/${today}.json`, at),
-      fitGet(`/1/user/-/hrv/date/${today}.json`, at).catch(() => null),
+    // Fire all requests in parallel; HRV is optional
+    const [sleepData, hrAgg, actAgg, hrvAgg] = await Promise.all([
+      fitGet(
+        `/sessions?startTime=${new Date(dayAgo).toISOString()}&endTime=${new Date(now).toISOString()}&activityType=72`,
+        at,
+      ),
+      fitAggregate({
+        aggregateBy:     [{ dataTypeName: 'com.google.heart_rate.bpm' }],
+        bucketByTime:    { durationMillis: 86_400_000 },
+        startTimeMillis: dayAgo,
+        endTimeMillis:   now,
+      }, at),
+      fitAggregate({
+        aggregateBy: [
+          { dataTypeName: 'com.google.step_count.delta'  },
+          { dataTypeName: 'com.google.calories.expended' },
+        ],
+        bucketByTime:    { durationMillis: 86_400_000 },
+        startTimeMillis: dayAgo,
+        endTimeMillis:   now,
+      }, at),
+      fitAggregate({
+        aggregateBy:     [{ dataTypeName: 'com.google.heart_rate.variability.rmssd' }],
+        bucketByTime:    { durationMillis: 86_400_000 },
+        startTimeMillis: dayAgo,
+        endTimeMillis:   now,
+      }, at).catch(() => null),
     ]);
 
-    // ── Sleep ──────────────────────────────────────────────────────────────
-    const sleepLogs = sleepData.sleep || [];
-    // Pick the longest (main) sleep record, ignoring naps
-    const mainSleep = sleepLogs.reduce(
-      (best, s) => (!best || s.minutesAsleep > best.minutesAsleep) ? s : best,
+    // ── Sleep ─────────────────────────────────────────────────────────────────
+    const sessions = (sleepData.session || []).filter(
+      s => s.activityType === '72' || s.activityType === 72,
+    );
+    // Pick the longest session (main sleep, not naps)
+    const main = sessions.reduce(
+      (best, s) => {
+        const dur = parseInt(s.endTimeMillis) - parseInt(s.startTimeMillis);
+        const bDur = best ? parseInt(best.endTimeMillis) - parseInt(best.startTimeMillis) : 0;
+        return dur > bDur ? s : best;
+      },
       null,
     );
 
-    const sleepMinutes  = mainSleep ? (mainSleep.minutesAsleep || 0) : 0;
-    const sleepHours    = parseFloat((sleepMinutes / 60).toFixed(1));
-    // Fitbit efficiency is already 0-100 (time asleep / time in bed × 100)
-    const sleepPerf     = mainSleep ? (mainSleep.efficiency || 0) : 0;
-    const bedtime       = mainSleep ? fmtFitbitTime(mainSleep.startTime) : '—';
-    const wakeTime      = mainSleep ? fmtFitbitTime(mainSleep.endTime)   : '—';
+    const sleepMs    = main ? parseInt(main.endTimeMillis) - parseInt(main.startTimeMillis) : 0;
+    const sleepHours = parseFloat((sleepMs / 3_600_000).toFixed(1));
+    // Google Fit gives no efficiency field — use sleep hours vs target as proxy
+    const sleepPerf  = Math.min(100, Math.round((sleepHours / SLEEP_TARGET) * 100));
+    const bedtime    = main ? fmtMs(parseInt(main.startTimeMillis)) : '—';
+    const wakeTime   = main ? fmtMs(parseInt(main.endTimeMillis))   : '—';
 
-    // Sleep stages (minutes) — only available on newer Fitbit devices
-    const stagesSum = mainSleep?.levels?.summary || {};
-    const stageDeep  = stagesSum.deep?.minutes  ?? 0;
-    const stageRem   = stagesSum.rem?.minutes   ?? 0;
-    const stageLight = stagesSum.light?.minutes ?? 0;
-    const stageWake  = stagesSum.wake?.minutes  ?? 0;
+    // ── Heart rate (min = resting HR proxy) ──────────────────────────────────
+    const rhr = parseFpMin(hrAgg.bucket);
 
-    // ── Resting Heart Rate ─────────────────────────────────────────────────
-    const hrArr = hrData['activities-heart'] || [];
-    const hrVal = hrArr.length ? (hrArr[hrArr.length - 1].value || {}) : {};
-    const rhr   = hrVal.restingHeartRate || 0;
+    // ── HRV ──────────────────────────────────────────────────────────────────
+    const hrv = hrvAgg ? parseFpAvg(hrvAgg.bucket) : 0;
 
-    // ── HRV ───────────────────────────────────────────────────────────────
-    // dailyRmssd: average RMSSD over the full sleep period (ms)
-    const hrvArr   = hrvData?.hrv || [];
-    const hrvEntry = hrvArr.length ? hrvArr[hrvArr.length - 1] : null;
-    const hrv      = hrvEntry ? Math.round(hrvEntry.value?.dailyRmssd || 0) : 0;
+    // ── Steps + calories ──────────────────────────────────────────────────────
+    const steps    = parseIntSum(actAgg.bucket);
+    const calories = parseFpSum(actAgg.bucket);
 
-    // ── Activity ──────────────────────────────────────────────────────────
-    const actSummary = actData.summary || {};
-    const steps      = actSummary.steps             || 0;
-    const calories   = actSummary.caloriesOut        || 0;
-    const actCal     = actSummary.activityCalories   || 0; // active-only calories
-
-    // ── Recovery score (0-100) ────────────────────────────────────────────
-    // If HRV is available: weighted average of HRV score + sleep efficiency.
-    // Otherwise fall back to sleep efficiency alone.
+    // ── Recovery (0-100) ─────────────────────────────────────────────────────
     let recovery;
     if (hrv > 0) {
-      // Normalise RMSSD: 20 ms = 0 pts, 80 ms = 100 pts
       const hrvScore = Math.min(100, Math.max(0, Math.round((hrv - 20) / 60 * 100)));
       recovery = Math.min(100, Math.round(sleepPerf * 0.4 + hrvScore * 0.6));
     } else {
       recovery = sleepPerf;
     }
 
-    // ── Strain (WHOOP-style 0-21, estimated from active calories) ─────────
-    // Active calories ÷ 75 maps ~1500 active cal day → 20 strain
-    const strain = parseFloat(Math.min(21, actCal / 75).toFixed(1));
+    // ── Strain (WHOOP-style 0-21) ─────────────────────────────────────────────
+    const strain = parseFloat(Math.min(21, calories / 100).toFixed(1));
 
-    // ── Sleep debt (last night vs target) ─────────────────────────────────
+    // ── Sleep debt ────────────────────────────────────────────────────────────
     const sleepDebt = parseFloat(Math.max(0, SLEEP_TARGET - sleepHours).toFixed(1));
 
     return res.status(200).json({
       connected:        true,
-      recovery,
+      recovery:         Math.max(0, recovery),
       hrv,
       rhr,
       sleepHours,
@@ -211,16 +274,10 @@ export default async function handler(req, res) {
       calories,
       steps,
       sleepDebt,
-      stageDeep,
-      stageRem,
-      stageLight,
-      stageWake,
       syncedAt: new Date().toISOString(),
     });
 
   } catch (err) {
-    // Return connected:true so the UI doesn't flip to empty state;
-    // the error message will surface in the sync line.
     return res.status(500).json({ connected: true, error: err.message });
   }
 }
