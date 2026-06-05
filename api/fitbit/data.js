@@ -48,30 +48,27 @@ async function saveTokens(supabaseUrl, supabaseKey, tokens) {
 // ── Fitbit OAuth token refresh ────────────────────────────────────────────────
 
 async function refreshAccessToken(tokens) {
-  const clientId     = process.env.FITBIT_CLIENT_ID;
-  const clientSecret = process.env.FITBIT_CLIENT_SECRET;
-  const basicAuth    = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
+  const clientId     = process.env.GOOGLE_HEALTH_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_HEALTH_CLIENT_SECRET;
 
-  const res = await fetch(`${FITBIT}/oauth2/token`, {
+  const res = await fetch('https://oauth2.googleapis.com/token', {
     method:  'POST',
-    headers: {
-      'Authorization': `Basic ${basicAuth}`,
-      'Content-Type':  'application/x-www-form-urlencoded',
-    },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type:    'refresh_token',
       refresh_token: tokens.refresh_token,
+      client_id:     clientId,
+      client_secret: clientSecret,
     }),
   });
   const data = await res.json();
-  if (!res.ok || data.errors) {
-    throw new Error('Token refresh failed: ' + (data.errors?.[0]?.message || res.status));
+  if (!res.ok || data.error) {
+    throw new Error('Token refresh failed: ' + (data.error || res.status));
   }
   return {
     access_token:  data.access_token,
     refresh_token: data.refresh_token || tokens.refresh_token,
-    user_id:       tokens.user_id,
-    expires_at:    Date.now() + (data.expires_in || 28800) * 1000,
+    expires_at:    Date.now() + (data.expires_in || 3600) * 1000,
   };
 }
 
