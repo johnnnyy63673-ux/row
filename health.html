@@ -1641,8 +1641,10 @@ document.addEventListener('DOMContentLoaded', function () {
       ticker.style.animation = 'fb-ticker-scroll ' + duration + ' linear infinite';
     }
 
-    // Sync time
-    if (d.syncedAt) {
+    // Sync time or error
+    if (d.error) {
+      set('fbSync', '⚠ ' + d.error);
+    } else if (d.syncedAt) {
       var t = new Date(d.syncedAt);
       set('fbSync', 'Synced ' + t.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }));
     }
