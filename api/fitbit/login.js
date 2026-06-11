@@ -1,5 +1,5 @@
 // api/fitbit/login.js
-// Redirects to Google Health OAuth2 consent screen.
+// Redirects to Google Health API OAuth2 consent screen (new Fitbit platform).
 // Required env vars: GOOGLE_HEALTH_CLIENT_ID
 
 export default function handler(req, res) {
@@ -13,10 +13,9 @@ export default function handler(req, res) {
     redirect_uri:  'https://row-zeta.vercel.app/api/fitbit/callback',
     response_type: 'code',
     scope: [
-      'https://www.googleapis.com/auth/fitness.sleep.read',
-      'https://www.googleapis.com/auth/fitness.heart_rate.read',
-      'https://www.googleapis.com/auth/fitness.body.read',
-      'https://www.googleapis.com/auth/fitness.activity.read',
+      'https://www.googleapis.com/auth/googlehealth.sleep.readonly',
+      'https://www.googleapis.com/auth/googlehealth.activity_and_fitness.readonly',
+      'https://www.googleapis.com/auth/googlehealth.health_metrics_and_measurements.readonly',
     ].join(' '),
     access_type: 'offline',
     prompt:      'consent',
