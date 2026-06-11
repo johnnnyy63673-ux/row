@@ -109,12 +109,8 @@ export default async function handler(req, res) {
 
     // ── Sleep ─────────────────────────────────────────────────────────────────
     const sleepPoints = sleepData?.dataPoints || [];
-    // Pick longest sleep session by minutesAsleep
-    const mainSleep = sleepPoints.reduce((best, s) => {
-      const dur  = Number(s.sleep?.summary?.minutesAsleep || 0);
-      const bDur = Number(best?.sleep?.summary?.minutesAsleep || 0);
-      return dur > bDur ? s : best;
-    }, null);
+    // API returns newest first — take the most recent session
+    const mainSleep = sleepPoints[0] || null;
 
     const sleepMins  = mainSleep ? Number(mainSleep.sleep?.summary?.minutesAsleep || 0) : 0;
     const sleepHours = parseFloat((sleepMins / 60).toFixed(1));
