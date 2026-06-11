@@ -73,8 +73,8 @@ async function healthRollup(dataType, startDate, endDate, at) {
     headers: { 'Authorization': `Bearer ${at}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       range: {
-        startTime: civilDate(startDate),
-        endTime:   civilDate(endDate),
+        startDate: civilDate(startDate),
+        endDate:   civilDate(endDate),
       },
     }),
   });
@@ -117,21 +117,16 @@ export default async function handler(req, res) {
 
   const at      = tokens.access_token;
   const today   = new Date();
-  const todayStr = today.toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86_400_000);
   const tomorrow  = new Date(Date.now() + 86_400_000);
-
-  // Filter strings for list endpoint
-  const sessionFilter = `session_time >= "${yesterday.toISOString()}" AND session_time < "${tomorrow.toISOString()}"`;
-  const sampleFilter  = `sample_time >= "${yesterday.toISOString()}" AND sample_time < "${tomorrow.toISOString()}"`;
+  const yesterday = new Date(Date.now() - 86_400_000);
 
   try {
     const [sleepData, rhrData, hrvData, stepsData, calsData] = await Promise.all([
-      healthGet('sleep', at, { filter: sessionFilter }).catch(() => null),
-      healthGet('daily-resting-heart-rate', at, { filter: `daily_summary_date = "${todayStr}"` }).catch(() => null),
-      healthGet('heart-rate-variability', at, { filter: sampleFilter }).catch(() => null),
-      healthRollup('steps', today, tomorrow, at).catch(() => null),
-      healthRollup('active-energy-burned', today, tomorrow, at).catch(() => null),
+      healthGet('sleep', at, { pageSize: 10 }).catch(() => null),
+      healthGet('daily-resting-heart-rate', at, { pageSize: 10 }).catch(() => null),
+      healthGet('heart-rate-variability', at, { pageSize: 50 }).catch(() => null),
+      healthRollup('steps', yesterday, tomorrow, at).catch(() => null),
+      healthRollup('active-energy-burned', yesterday, tomorrow, at).catch(() => null),
     ]);
 
     // ── Sleep ─────────────────────────────────────────────────────────────────

@@ -36,37 +36,36 @@ export default async function handler(req, res) {
 
   const auth    = { 'Authorization': `Bearer ${at}` };
   const now     = Date.now();
-  const today   = new Date().toISOString().split('T')[0];
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString();
-  const tomorrow  = new Date(Date.now() + 86_400_000).toISOString();
-  const sessionFilter = encodeURIComponent(`session_time >= "${yesterday}" AND session_time < "${tomorrow}"`);
-  const sampleFilter  = encodeURIComponent(`sample_time >= "${yesterday}" AND sample_time < "${tomorrow}"`);
+  const d       = new Date();
+  const tmr     = new Date(now + 86_400_000);
+  const yest    = new Date(now - 86_400_000);
+  const cd      = (x) => ({ year: x.getFullYear(), month: x.getMonth()+1, day: x.getDate() });
 
   const results = await Promise.all([
     tryFetch('token_info',
       `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${at}`),
     tryFetch('sleep',
-      `${HEALTH_BASE}/users/me/dataTypes/sleep/dataPoints?filter=${sessionFilter}`,
+      `${HEALTH_BASE}/users/me/dataTypes/sleep/dataPoints?pageSize=5`,
       { headers: auth }),
     tryFetch('daily_resting_heart_rate',
-      `${HEALTH_BASE}/users/me/dataTypes/daily-resting-heart-rate/dataPoints?filter=${encodeURIComponent(`daily_summary_date = "${today}"`)}`,
+      `${HEALTH_BASE}/users/me/dataTypes/daily-resting-heart-rate/dataPoints?pageSize=5`,
       { headers: auth }),
     tryFetch('heart_rate_variability',
-      `${HEALTH_BASE}/users/me/dataTypes/heart-rate-variability/dataPoints?filter=${sampleFilter}`,
+      `${HEALTH_BASE}/users/me/dataTypes/heart-rate-variability/dataPoints?pageSize=10`,
       { headers: auth }),
     tryFetch('steps_rollup',
       `${HEALTH_BASE}/users/me/dataTypes/steps/dataPoints:dailyRollUp`,
       {
         method:  'POST',
         headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range: { startTime: { year: new Date().getFullYear(), month: new Date().getMonth()+1, day: new Date().getDate() }, endTime: { year: new Date().getFullYear(), month: new Date().getMonth()+1, day: new Date().getDate()+1 } } }),
+        body: JSON.stringify({ range: { startDate: cd(yest), endDate: cd(tmr) } }),
       }),
     tryFetch('calories_rollup',
       `${HEALTH_BASE}/users/me/dataTypes/active-energy-burned/dataPoints:dailyRollUp`,
       {
         method:  'POST',
         headers: { ...auth, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ range: { startTime: { year: new Date().getFullYear(), month: new Date().getMonth()+1, day: new Date().getDate() }, endTime: { year: new Date().getFullYear(), month: new Date().getMonth()+1, day: new Date().getDate()+1 } } }),
+        body: JSON.stringify({ range: { startDate: cd(yest), endDate: cd(tmr) } }),
       }),
   ]);
 
