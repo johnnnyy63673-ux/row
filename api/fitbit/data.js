@@ -67,28 +67,6 @@ async function healthGet(dataType, at, params = {}) {
   return res.json();
 }
 
-async function healthRollup(dataType, startDate, endDate, at) {
-  const res = await fetch(`${HEALTH_BASE}/users/me/dataTypes/${dataType}/dataPoints:dailyRollUp`, {
-    method:  'POST',
-    headers: { 'Authorization': `Bearer ${at}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      range: {
-        startDate: civilDate(startDate),
-        endDate:   civilDate(endDate),
-      },
-    }),
-  });
-  if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(`rollUp ${dataType} → ${res.status}: ${body?.error?.message || JSON.stringify(body)}`);
-  }
-  return res.json();
-}
-
-function civilDate(d) {
-  return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
-}
-
 function fmtTime(isoStr) {
   if (!isoStr) return '—';
   return new Date(isoStr).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
@@ -125,47 +103,46 @@ export default async function handler(req, res) {
       healthGet('sleep', at, { pageSize: 10 }).catch(() => null),
       healthGet('daily-resting-heart-rate', at, { pageSize: 10 }).catch(() => null),
       healthGet('heart-rate-variability', at, { pageSize: 50 }).catch(() => null),
-      healthRollup('steps', yesterday, tomorrow, at).catch(() => null),
-      healthRollup('active-energy-burned', yesterday, tomorrow, at).catch(() => null),
+      healthGet('steps', at, { pageSize: 50 }).catch(() => null),
+      healthGet('active-energy-burned', at, { pageSize: 50 }).catch(() => null),
     ]);
 
     // ── Sleep ─────────────────────────────────────────────────────────────────
     const sleepPoints = sleepData?.dataPoints || [];
-    // Pick longest sleep session
+    // Pick longest sleep session by minutesAsleep
     const mainSleep = sleepPoints.reduce((best, s) => {
-      const dur = s.sleep?.durationMs || s.durationMs || 0;
-      const bDur = best?.sleep?.durationMs || best?.durationMs || 0;
-      return Number(dur) > Number(bDur) ? s : best;
+      const dur  = Number(s.sleep?.summary?.minutesAsleep || 0);
+      const bDur = Number(best?.sleep?.summary?.minutesAsleep || 0);
+      return dur > bDur ? s : best;
     }, null);
 
-    const sleepMs    = mainSleep ? Number(mainSleep.sleep?.durationMs || mainSleep.durationMs || 0) : 0;
-    const sleepHours = parseFloat((sleepMs / 3_600_000).toFixed(1));
+    const sleepMins  = mainSleep ? Number(mainSleep.sleep?.summary?.minutesAsleep || 0) : 0;
+    const sleepHours = parseFloat((sleepMins / 60).toFixed(1));
     const sleepPerf  = Math.min(100, Math.round((sleepHours / SLEEP_TARGET) * 100));
-    const bedtime    = mainSleep ? fmtTime(mainSleep.startTime || mainSleep.sessionStartTime) : '—';
-    const wakeTime   = mainSleep ? fmtTime(mainSleep.endTime   || mainSleep.sessionEndTime)   : '—';
+    const bedtime    = mainSleep ? fmtTime(mainSleep.sleep?.interval?.startTime) : '—';
+    const wakeTime   = mainSleep ? fmtTime(mainSleep.sleep?.interval?.endTime)   : '—';
 
     // ── Resting heart rate ────────────────────────────────────────────────────
     const rhrPoints = rhrData?.dataPoints || [];
     const rhr = rhrPoints.length
-      ? Math.round(rhrPoints[rhrPoints.length - 1]?.dailyRestingHeartRate?.beatsPerMinute
-          || rhrPoints[rhrPoints.length - 1]?.value?.fpVal
-          || 0)
+      ? Math.round(Number(rhrPoints[0]?.dailyRestingHeartRate?.beatsPerMinute || 0))
       : 0;
 
     // ── HRV ──────────────────────────────────────────────────────────────────
     const hrvPoints = hrvData?.dataPoints || [];
     const hrv = hrvPoints.length
       ? Math.round(
-          hrvPoints.reduce((sum, p) => sum + (p.heartRateVariability?.rmssd || p.value?.fpVal || 0), 0)
+          hrvPoints.reduce((sum, p) => sum + (p.heartRateVariability?.rootMeanSquareOfSuccessiveDifferencesMilliseconds || 0), 0)
           / hrvPoints.length,
         )
       : 0;
 
-    // ── Steps + calories ──────────────────────────────────────────────────────
-    const stepsRollup = stepsData?.rollupDataPoints?.[0];
-    const calsRollup  = calsData?.rollupDataPoints?.[0];
-    const steps    = stepsRollup?.steps?.count || stepsRollup?.value?.intVal || 0;
-    const calories = Math.round(calsRollup?.activeEnergyBurned?.kilocalories || calsRollup?.value?.fpVal || 0);
+    // ── Steps + calories (sum today's individual records) ─────────────────────
+    const todayStr = today.toISOString().split('T')[0];
+    const stepsPoints = stepsData?.dataPoints || [];
+    const calsPoints  = calsData?.dataPoints  || [];
+    const steps    = stepsPoints.reduce((sum, p) => sum + Number(p.steps?.count || p.value?.intVal || 0), 0);
+    const calories = Math.round(calsPoints.reduce((sum, p) => sum + Number(p.activeEnergyBurned?.kilocalories || p.value?.fpVal || 0), 0));
 
     // ── Recovery (0-100) ─────────────────────────────────────────────────────
     let recovery;
