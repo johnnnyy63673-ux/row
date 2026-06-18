@@ -1637,9 +1637,8 @@ function render(){
 
   if(!h){
     document.getElementById('app').innerHTML=head+srcRow+feelBar+mCard
-      +(cur==='manual' ? '' :
-        '<div class="card empty"><div class="emptyTitle">No vitals yet</div>'
-        +'<p class="emptyBody">Pick a source above — rate how you feel (Manual), connect Whoop, or pull from your Apple Watch. Your day then builds into a score and an energy curve.</p></div>');
+      +'<div class="card empty"><div class="emptyTitle">Syncing from Fitbit Air...</div>'
+        +'<p class="emptyBody">Your sleep, HRV, and recovery data is loading. This usually takes just a moment.</p></div>';
     bindFeel();
     return;
   }
@@ -1675,8 +1674,8 @@ function render(){
     +'<div class="peakNum" id="peakNum">'+Math.round(PEAK.e)+'</div></div>';
   const sp=planSleep();
   const sleepPlan = hasWakeBedData()
-    ? '<div class="sleepPlan" data-sleepedit="1" style="cursor:pointer"><span class="spItem">🌙 Bed <b>'+clockOf(sp.bed)+'</b></span><span class="spDot">·</span><span class="spItem">☀️ Wake <b>'+clockOf(sp.wake)+'</b></span><span class="spNote"><b class="cdVal" data-countdown="'+bedCountdownMs()+'" style="color:var(--accent2)"></b> to bed · tap to edit</span></div>'
-    : '<div class="sleepPlan" data-sleepedit="1" style="cursor:pointer;border-color:rgba(245,158,11,.4)"><span class="spItem" style="color:var(--warn)">⚠ Set your wake &amp; sleep time</span><span class="spNote">tap to add when you woke + when you’ll sleep</span></div>';
+    ? ‘<div class="sleepPlan"><span class="spItem">🌙 Bed <b>’+clockOf(sp.bed)+’</b></span><span class="spDot">·</span><span class="spItem">☀️ Wake <b>’+clockOf(sp.wake)+’</b></span><span class="spNote"><b class="cdVal" data-countdown="’+bedCountdownMs()+’" style="color:var(--accent2)"></b> to bed</span></div>’
+    : ‘<div class="sleepPlan"><span class="spItem" style="color:var(--muted)">⏳ Syncing from Fitbit Air...</span></div>’;
   const cc=caffeineCrash(), mc=medCrash();
   let crashLabels='';
   if(cc) crashLabels+='<div class="crashMark" style="left:'+clamp(cc.t/24*100,6,94)+'%">☕ crash '+clockOf(cc.t)+'</div>';
