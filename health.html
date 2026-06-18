@@ -732,7 +732,7 @@ function medCardHtml(){
     +'<a class="trackLink" href="meds.html">Open Meds tracker →</a>'
     +'</div>';
 }
-function medLogsHtml(){ const logs=medTodayLogs(); if(!logs.length)return ''; return '<div class="cafLogsHead"><span class="cafLogsLab">Today’s doses</span><button class="cafClear" data-clearmed="1">clear all</button></div><div class="cafLogs">'+logs.map(l=>'<span class="cafLog"><b>'+esc(l.name)+'</b> '+Math.round(l.mg)+'mg · '+fmtClockMs(l.t)+'<span class="cafLogX" data-rmmed="'+esc(l.id||'')+'" title="Remove">×</span></span>').join('')+'</div>'; }
+function medLogsHtml(){ const logs=medTodayLogs(); if(!logs.length)return ''; return '<div class="cafLogsHead"><span class="cafLogsLab">Today doses</span><button class="cafClear" data-clearmed="1">clear all</button></div><div class="cafLogs">'+logs.map(l=>'<span class="cafLog"><b>'+esc(l.name)+'</b> '+Math.round(l.mg)+'mg · '+fmtClockMs(l.t)+'<span class="cafLogX" data-rmmed="'+esc(l.id||'')+'" title="Remove">×</span></span>').join('')+'</div>'; }
 
 /* ---- compact Water card (syncs water_standalone_v1) ---- */
 function logWater(n){ const s=readLS('water_standalone_v1')||{logs:{}}; if(!s.logs)s.logs={}; const k=dKey(); s.logs[k]=Math.max(0,(s.logs[k]||0)+n); try{ localStorage.setItem('water_standalone_v1',JSON.stringify(s)); }catch(e){} render(); }
@@ -894,7 +894,7 @@ function sleepEditPopHtml(){ if(!sleepEditOpen)return '';
   return '<div class="sleepEditPop" id="sleepEditPop">'
     +'<div class="sleepEditTitle">Your sleep</div>'
     +row('Wake','I woke up at', sleepEditWake)
-    +row('Bed','I’ll sleep at', sleepEditBed)
+    +row('Bed',"I'll sleep at", sleepEditBed)
     +'<div class="sleepEditBtns"><button class="sleepEditCancel" data-sleepcancel="1">Cancel</button><button class="sleepEditSaveBtn" data-sleepsave="1">Save</button></div>'
     +'</div>'; }
 function openSleepEdit(){ const ps=planSleep(); sleepEditWake=ps.wake; sleepEditBed=ps.bed; sleepEditOpen=true; render(); }
@@ -988,7 +988,7 @@ function importThemeCode(code){ try{
       const cfg=JSON.parse(decodeURIComponent(escape(atob(raw.replace(/^PEAK-?THEME:?/i,'').trim()))));
       if(!cfg||(!cfg.style&&!cfg.bg&&!cfg.tasks&&!cfg.bgAnim))return false;
       const t=loadTheme()||{v:1}; t.style=cfg.style||{}; t.bg=cfg.bg||null; t.bgAnim=cfg.bgAnim||null; localStorage.setItem(PEAK_THEME, JSON.stringify(t));
-      if(Array.isArray(cfg.tasks)&&cfg.tasks.length && confirm('Also replace your schedule with the creator’s tasks?')){
+      if(Array.isArray(cfg.tasks)&&cfg.tasks.length && confirm("Also replace your schedule with the creator's tasks?")){
         const tasks=cfg.tasks.map(t2=>({ id:t2.id||('k_'+Math.random().toString(36).slice(2,8)), label:t2.label||t2.name||'Task', start:t2.start, end:t2.end, durH:t2.durH||((t2.end!=null&&t2.start!=null)?t2.end-t2.start:1), color:t2.color, icon:t2.icon, diff:t2.diff||'med', locked:(t2.locked!=null?!!t2.locked:!!t2.explicit), explicit:(t2.explicit!=null?!!t2.explicit:(t2.start!=null)), gap:!!t2.gap, size:t2.size, rStart:(t2.rStart!=null?t2.rStart:null), rEnd:(t2.rEnd!=null?t2.rEnd:null) }));
         saveSched(tasks);
       }
@@ -1000,7 +1000,7 @@ function importThemeCode(code){ try{
       if(cfg&&cfg.lab==='graph'){ const t=loadTheme()||{v:1}; t.graph=normGraph(cfg);
         const v=String(cfg.variant||cfg.animate||'').toLowerCase(); chartType=/bars?/.test(v)?'bars':(/stack/.test(v)?'stack':'line');
         localStorage.setItem(PEAK_THEME, JSON.stringify(t)); render(); return true; }
-      if(cfg&&cfg.lab==='text'){ alert('That’s a Text Lab design (title animations) — it doesn’t style the energy graph.'); return false; }
+      if(cfg&&cfg.lab==='text'){ alert("That's a Text Lab design (title animations) — it doesn't style the energy graph."); return false; }
       if(cfg&&(cfg.style||cfg.bg)){ const t=loadTheme()||{v:1}; if(cfg.style)t.style=cfg.style; if(cfg.bg!=null)t.bg=cfg.bg; localStorage.setItem(PEAK_THEME, JSON.stringify(t)); applyThemeBg(); render(); return true; }
     }
     return false;
@@ -1147,7 +1147,7 @@ function addSched(str, win){ if(!str||!str.trim())return; schErr=''; const tasks
   // EVERY task must specify a time — no auto-placement, no gap-fills.
   str.split(/,|;|\band\b/i).forEach(pStr=>{ if(!pStr.trim())return; const p=parseTask(pStr); if(!p)return;
     if(win){ placeInWindow(p, win[0], win[1], tasks.filter(x=>!x.gap)); tasks.push(p); added++; return; } // a clicked window IS the time
-    if(p.gap || !p.explicit || p.start==null){ schErr='Add a time — e.g. “school 10-2”, “gym 1930 hard”, “study 3-5”.'; return; }
+    if(p.gap || !p.explicit || p.start==null){ schErr='Add a time — e.g. "school 10-2", "gym 1930 hard", "study 3-5".'; return; }
     p.start=((p.start%24)+24)%24; p.end=Math.max(p.start+0.25,Math.min(24,p.end)); tasks.push(p); added++;
   });
   if(added) tasks.sort((a,b)=>(a.start==null?99:a.start)-(b.start==null?99:b.start));
@@ -1290,7 +1290,7 @@ function scheduleHtml(){
     +(themeOpen?'<div class="schThemeRow"><textarea id="themeCode" class="schThemeIn" placeholder="Paste a theme or graph code…" rows="2" autocomplete="off"></textarea><button class="schThemeApply" data-themeapply="1">Apply</button></div>'
       +'<div class="schThemeHint">Paste a Schedule Lab <b>theme code</b> (color, background, cards) or a Graph Lab <b>graph code</b> (bars, stepped, dotted, glow)'+(_hasTheme?' <button class="schThemeReset" data-themereset="1">· reset to default</button>':'')+'</div>':'')
     +'</div>';
-  const input='<div class="schInputRow"><input id="schInput" class="schInput" placeholder="e.g. school 10-2, gym 1930 hard" autocomplete="off"><button class="schAdd" data-addsched="1">＋ Add</button></div><div class="schHint">give every task a time — e.g. <b>school 10-2</b> · <b>gym 1930 hard</b> · <b>claude 9-11</b>. “10-2” means 10am–2pm. easy/medium/hard = color · drag a pill to move it <span style="opacity:.6">· build '+SCHED_SEED+'</span></div>'+themeBlock;
+  const input='<div class="schInputRow"><input id="schInput" class="schInput" placeholder="e.g. school 10-2, gym 1930 hard" autocomplete="off"><button class="schAdd" data-addsched="1">＋ Add</button></div><div class="schHint">give every task a time — e.g. <b>school 10-2</b> · <b>gym 1930 hard</b> · <b>claude 9-11</b>. "10-2" means 10am–2pm. easy/medium/hard = color · drag a pill to move it <span style="opacity:.6">· build '+SCHED_SEED+'</span></div>'+themeBlock;
   const wOut = '';   // no auto-add workout nudge — every task is typed with a time
   const row = tasks.length ? '<div class="schRow">'+tasks.map(t=>{ const time = t.gap ? (t.rStart!=null?clockOf(t.rStart)+'–'+clockOf(t.rEnd):(t.size==='small'?'small gaps':'fills day')) : clockOf(t.start);
       const armed=(!t.gap && schSel.indexOf(t.id)>=0)?' sel':''; const armAttr=t.gap?'':' data-armchip="'+t.id+'"';
@@ -1301,11 +1301,11 @@ function scheduleHtml(){
   else { nowBlock='<div class="schNow"><div class="schNowTag">○ Free time</div><div class="schNowLabel">Nothing scheduled</div><div class="schCount"><b class="cdVal" data-countdown="'+bedCountdownMs()+'"></b> until bedtime</div></div>'; }
   const _g=schGapWindow(); let _banner=''; if(schErr) _banner='<div class="schBanner warn">! '+esc(schErr)+'</div>';
   if(_g){ _banner = (_g.hi>_g.lo+0.05)
-    ? '<div class="schBanner">↳ '+clockOf(_g.lo)+'–'+clockOf(_g.hi)+(_g.free?' free window':(' between '+esc(_g.first.label)+' & '+esc(_g.second.label)))+' — type a task (“fill” = whole gap · “sleep 2h” = sized)</div>'
+    ? '<div class="schBanner">↳ '+clockOf(_g.lo)+'–'+clockOf(_g.hi)+(_g.free?' free window':(' between '+esc(_g.first.label)+' & '+esc(_g.second.label)))+' — type a task ("fill" = whole gap · "sleep 2h" = sized)</div>'
     : '<div class="schBanner warn">⚠ no gap there (tasks touch/overlap)</div>'; }
   let _confirm='';
   if(schPending){ const _pp=parseTask(schPending.str); const _pn=_pp?_pp.label:schPending.str;
-    _confirm='<div class="schConfirm">⚠ “'+esc(_pn)+'” overlaps '+esc(schPending.name)+' — <button data-schcf="fit">Fit to schedule</button><button data-schcf="override">Override</button><button data-schcf="cancel">Cancel</button></div>'; }
+    _confirm='<div class="schConfirm">⚠ "'+esc(_pn)+'" overlaps '+esc(schPending.name)+' — <button data-schcf="fit">Fit to schedule</button><button data-schcf="override">Override</button><button data-schcf="cancel">Cancel</button></div>'; }
   return '<div class="card schCard">'+input+_banner+_confirm+wOut+row+nowBlock+'</div>';
 }
 function curveStatusHtml(){
@@ -1315,7 +1315,7 @@ function curveStatusHtml(){
   return '<span class="curveEyebrow">○ Free time</span><br><span class="csubt"><b class="cdVal" data-countdown="'+bedCountdownMs()+'"></b> until bedtime</span>';
 }
 function planLaneHtml(){
-  const segs=effectiveSegments(); const head='<p class="planLabel">Today’s plan</p>';
+  const segs=effectiveSegments(); const head='<p class="planLabel">Today plan</p>';
   if(!segs.length) return head+'<div class="planEmpty" data-planadd="1">Free — tap to plan your day around your peak</div>';
   const summary='<button class="planToggle" data-plantoggle="1">'+segs.length+' scheduled · view against your curve <span>'+(planOpen?'▲':'▼')+'</span></button>';
   let drop='';
@@ -1323,7 +1323,7 @@ function planLaneHtml(){
   return head+summary+drop;
 }
 function bindSched(){ const i=document.getElementById('schInput'); if(i)i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ runSchedPrompt(i.value); } });
-  const tc=document.getElementById('themeCode'); if(tc)tc.addEventListener('keydown',e=>{ if(e.key==='Enter'){ themeOpen=false; if(!importThemeCode(tc.value)){ themeOpen=true; render(); alert(‘Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.’); } } }); }
+  const tc=document.getElementById('themeCode'); if(tc)tc.addEventListener('keydown',e=>{ if(e.key==='Enter'){ themeOpen=false; if(!importThemeCode(tc.value)){ themeOpen=true; render(); alert('Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.'); } } }); }
 
 /* ============================================================
  * Chart
@@ -1457,13 +1457,13 @@ function nowStatus(){ const e=energyAt(nowT()).e;
   return 'Low. Rest, hydrate, and protect your evening wind-down.'; }
 function recommendations(){
   const h=health(); const rec=estRecovery(h); const out=[];
-  if(rec!=null){ const adv=rec>=67?'Stack your hardest training or thinking session inside the peak window.':rec>=40?'Train smart — quality over max intensity today.':'Go easy: light movement, hydration, protect tonight’s sleep.';
+  if(rec!=null){ const adv=rec>=67?'Stack your hardest training or thinking session inside the peak window.':rec>=40?'Train smart — quality over max intensity today.':"Go easy: light movement, hydration, protect tonight's sleep.";
     out.push([false,'Recovery '+Math.round(rec)+'%.',adv]); }
   if(waterLoggedToday()){ const dr=drinksToday(),tgt=waterTarget();
-    if(dr<tgt) out.push([false,dr+' / '+tgt+' drinks.','You’re behind on water — top up to hold your afternoon energy.']);
+    if(dr<tgt) out.push([false,dr+' / '+tgt+' drinks.',"You're behind on water — top up to hold your afternoon energy."]);
     else out.push([false,'Hydration on target.','Nicely topped up — that protects your focus curve.']);
   }
-  const ms=macrosScore(); if(ms!=null){ const m=macrosToday(); out.push([ms<60,'Protein '+m.p+'g / '+proteinTarget()+'g.', ms<60?'Behind on protein — it’s the lever for recovery + muscle.':'Solid protein intake today.']); }
+  const ms=macrosScore(); if(ms!=null){ const m=macrosToday(); out.push([ms<60,'Protein '+m.p+'g / '+proteinTarget()+'g.', ms<60?"Behind on protein — it's the lever for recovery + muscle.":"Solid protein intake today."]); }
   const su=suppsToday(); if(su) out.push([su.taken<su.total,'Supplements '+su.taken+'/'+su.total+'.', su.taken>=su.total?'Full stack in — that compounds into recovery over weeks.':'A few left — consistency is where supplements actually pay off.']);
   if(gymLoggedToday()) out.push([false,'Trained today. ✔','Session logged — recovery tonight is what banks the gains.']);
   if(!out.length) out.push([false,'Add your vitals.','Pick a source above and your day fills in.']);
@@ -1536,13 +1536,13 @@ function peakWithExtra(mg){ const logs=stimLogs(); logs.push({mg:mg,t:Date.now()
 function caffeineCoach(){
   const caf=caffeineNowMg(); const {wake,bed}=wakeBed(); const t=nowT();
   const consumed=caffConsumedToday(), ceil=caffCeiling();
-  if(consumed>=ceil) return {warn:true,icon:'⚠️',txt:'You’ve hit <b>'+Math.round(consumed)+'mg</b> — at/over your <b>'+ceil+'mg</b> daily ceiling. More now risks jitters + a worse crash.'};
+  if(consumed>=ceil) return {warn:true,icon:'⚠️',txt:"You've hit <b>'+Math.round(consumed)+'mg</b> — at/over your <b>'+ceil+'mg</b> daily ceiling. More now risks jitters + a worse crash."};
   if(pastCutoff()) return {warn:true,icon:'🌙',txt:'Past your caffeine cut-off (<b>'+caffCutoffClock()+'</b>). Anything now is still in your system at bedtime and will cost you deep sleep.'};
   const dip=upcomingLow(t+0.5,4);
   if(caf<40 && dip.e<58 && (dip.t-t)<4.5){ const dbl=caffSweetDose()*1.4|0; const np=Math.round(peakWithExtra(dbl)); const crash=upcomingLow(dip.t+1.5,5);
     return {warn:false,icon:'☕',txt:'Energy dips to <b>'+Math.round(dip.e)+'</b> near <b>'+clockOf(dip.t)+'</b>. A ~'+dbl+'mg hit now would push your peak to <b>'+np+'</b> — but watch for a comedown around <b>'+clockOf(crash.t)+'</b>.'}; }
-  if(caf<20 && t>=wake && t<wake+4) return {warn:false,icon:'☕',txt:'You’re in your morning rise — a <b>'+caffSweetDose()+'mg</b> dose now sharpens the first peak with the least sleep cost later.'};
-  if(caf>0) return {warn:false,icon:'✅',txt:'<b>'+Math.round(caf)+'mg</b> on board, '+Math.round(consumed)+'/'+ceil+'mg today. Timing’s clean — clears by '+(caffClearsClock()||'bedtime')+'.'};
+  if(caf<20 && t>=wake && t<wake+4) return {warn:false,icon:'☕',txt:"You're in your morning rise — a <b>'+caffSweetDose()+'mg</b> dose now sharpens the first peak with the least sleep cost later."};
+  if(caf>0) return {warn:false,icon:'✅',txt:'<b>'+Math.round(caf)+"mg</b> on board, "+Math.round(consumed)+'/'+ceil+"mg today. Timing's clean — clears by "+(caffClearsClock()||'bedtime')+'.'};
   return {warn:false,icon:'☕',txt:'Nothing logged yet. Your ideal dose is ~<b>'+caffSweetDose()+'mg</b>; tap a drink to see it lift the curve.'};
 }
 
@@ -1586,7 +1586,7 @@ function infoCardHtml(){
     +'<h4>Real inputs</h4><p>Your Whoop / Apple Watch / manual vitals, the caffeine + meds/substances you log, supplements (auto-read from that tracker), water, protein, gym, and your weight/age/sex.</p>'
     +'<h4>The model</h4><p>Energy curve = circadian rhythm (two-process sleep model) × your recovery, plus pharmacokinetics for caffeine <b>and any med/substance you log</b> (each with onset→peak→wear-off + comedown). Recovery scores HRV + resting HR against <b>your own rolling baseline</b> (not population averages); manual readiness uses the Hooper index.</p>'
     +'<h4>Tuned to you</h4><p>It already adapts from your suite data: <b>your HRV/RHR baselines</b>, <b>multi-day sleep debt</b>, your <b>chronotype</b> (real wake/bed times), caffeine <b>tolerance</b> from habitual intake, and faster caffeine clearance if you log nicotine.</p>'
-    +'<h4>Learns you</h4><p>Your “how I feel” checks correct the curve toward how you actually feel — <b>by time of day</b> (your mornings vs afternoons), gradually reaching full strength after ~30 days. <b>'+days+'/30 days</b> in so far.</p></div>';
+    +'<h4>Learns you</h4><p>Your "how I feel" checks correct the curve toward how you actually feel — <b>by time of day</b> (your mornings vs afternoons), gradually reaching full strength after ~30 days. <b>'+days+'/30 days</b> in so far.</p></div>';
 }
 
 /* ---- per-day manual log (history for the day cards) ---- */
@@ -1674,8 +1674,8 @@ function render(){
     +'<div class="peakNum" id="peakNum">'+Math.round(PEAK.e)+'</div></div>';
   const sp=planSleep();
   const sleepPlan = hasWakeBedData()
-    ? ‘<div class="sleepPlan"><span class="spItem">🌙 Bed <b>’+clockOf(sp.bed)+’</b></span><span class="spDot">·</span><span class="spItem">☀️ Wake <b>’+clockOf(sp.wake)+’</b></span><span class="spNote"><b class="cdVal" data-countdown="’+bedCountdownMs()+’" style="color:var(--accent2)"></b> to bed</span></div>’
-    : ‘<div class="sleepPlan"><span class="spItem" style="color:var(--muted)">⏳ Syncing from Fitbit Air...</span></div>’;
+    ? '<div class="sleepPlan"><span class="spItem">🌙 Bed <b>'+clockOf(sp.bed)+'</b></span><span class="spDot">·</span><span class="spItem">☀️ Wake <b>'+clockOf(sp.wake)+'</b></span><span class="spNote"><b class="cdVal" data-countdown="'+bedCountdownMs()+'" style="color:var(--accent2)"></b> to bed</span></div>'
+    : '<div class="sleepPlan"><span class="spItem" style="color:var(--muted)">⏳ Syncing from Fitbit Air...</span></div>';
   const cc=caffeineCrash(), mc=medCrash();
   let crashLabels='';
   if(cc) crashLabels+='<div class="crashMark" style="left:'+clamp(cc.t/24*100,6,94)+'%">☕ crash '+clockOf(cc.t)+'</div>';
@@ -1703,14 +1703,14 @@ function render(){
   const waterSec='<div class="sec"><span class="secNum">06</span><span class="secTitle">Water</span><span class="secLine"></span></div>'+waterCardHtml();
   const suppSec='<div class="sec"><span class="secNum">07</span><span class="secTitle">Supplements</span><span class="secLine"></span></div>'+suppCardHtml();
 
-  const footNote='<p class="footNote">Peak is a science-based estimate from your own data — not a medical measurement. It personalizes to you over ~30 days. Tap the “i” to see how it’s calculated. Meds are modeled for information only, never as dosing advice.</p>';
+  const footNote='<p class="footNote">Peak is a science-based estimate from your own data — not a medical measurement. It personalizes to you over ~30 days. Tap the "i" to see how it is calculated. Meds are modeled for information only, never as dosing advice.</p>';
   document.getElementById('app').innerHTML=head+srcRow+topScore+mCard+tk+daySec+schedSec+nowSec+cafSec+medSec+waterSec+suppSec+footNote;
   bindScrub(); bindFeel(); bindCaf(); bindMed(); bindSched(); bindTaskDrag(); bindSleepEdit(); layoutSchedPills(); tickCountdowns();
 }
 function feelBarHtml(){
   const f=latestFeelToday(); const val=f!=null?f:Math.round(energyAt(nowT()).e);
   const days=feelDays();
-  const note = days>=30 ? 'Tailored to your last 30 days ✓' : (days>0?'Currently building a more detailed analysis · '+days+'/30 days':'Set this daily and I’ll tailor your model over 30 days');
+  const note = days>=30 ? 'Tailored to your last 30 days ✓' : (days>0?'Currently building a more detailed analysis · '+days+'/30 days':"Set this daily and I'll tailor your model over 30 days");
   return '<div class="feelBar"><div class="feelHead"><div class="feelTitle">How do you feel right now?</div><div class="feelNote'+(days>=30?' ready':'')+'">'+note+'</div></div>'
     +'<div class="feelSliderWrap"><input class="feelSlider" id="feelSlider" type="range" min="0" max="100" value="'+val+'"><span class="feelPct" id="feelPct">'+val+'%</span></div></div>';
 }
@@ -1743,7 +1743,7 @@ function caffeineCardHtml(){
 }
 function caffLogsHtml(){
   const logs=caffTodayLogs(); if(!logs.length) return '';
-  return '<div class="cafLogsHead"><span class="cafLogsLab">Today’s intake</span><button class="cafClear" data-clearcaf="1">clear all</button></div>'
+  return '<div class="cafLogsHead"><span class="cafLogsLab">Today intake</span><button class="cafClear" data-clearcaf="1">clear all</button></div>'
     +'<div class="cafLogs">'+logs.map(l=>'<span class="cafLog"><b>'+esc(l.name||'Caffeine')+'</b> '+Math.round(l.mg)+'mg · '+fmtClockMs(l.t)+'<span class="cafLogX" data-rmcaf="'+esc(l.id||'')+'" title="Remove">×</span></span>').join('')+'</div>';
 }
 
@@ -1777,7 +1777,7 @@ async function pickSource(src){
     // Live refresh didn't confirm a connection. If we already have Whoop data, just
     // keep showing it — never bounce to a (possibly failing) re-login automatically.
     if(haveWhoop){ render(); return; }
-    if(confirm(‘Connect your Whoop account? You will log in on whoop.com.’)) location.href=’/api/whoop/login’;
+    if(confirm('Connect your Whoop account? You will log in on whoop.com.')) location.href='/api/whoop/login';
     else { selectedSrc=null; render(); }
     return;
   }
@@ -1849,7 +1849,7 @@ function manualCard(h){
     +'<button class="pulseBtn" data-pulse="10">10s</button><button class="pulseBtn" data-pulse="30">30s</button>'
     +'<span class="pulseRing" id="pulseRing"><svg viewBox="0 0 34 34"><circle class="pt" cx="17" cy="17" r="14"/><circle class="pf" id="pulseFill" cx="17" cy="17" r="14"/></svg><span class="pulseCount" id="pulseCount"></span></span>'
     +'<span class="chipWord" id="pulseHint" style="color:var(--muted);font-style:normal;font-family:var(--mono);font-size:10px">tap 10s/30s &amp; count beats</span></div></div>'
-    +’<button class="primary" id="mSave">’+(isToday?’Save readiness’:’Save ‘+dObj.toLocaleDateString(‘en-US’,{month:’short’,day:’numeric’}))+’</button></div>’;
+    +'<button class="primary" id="mSave">'+(isToday?'Save readiness':'Save '+dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}))+'</button></div>';
 }
 function saveManual(){
   // pull resting pulse (the one free-typed field) into the draft
@@ -1899,7 +1899,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-addsched]')){ const i=document.getElementById('schInput'); if(i)runSchedPrompt(i.value); return; }
   if(e.target.closest('[data-themeimport]')){ themeOpen=!themeOpen; render(); return; }
   if(e.target.closest('[data-themereset]')){ resetTheme(); return; }
-  if(e.target.closest('[data-themeapply]')){ const i=document.getElementById('themeCode'); const code=i?i.value:''; themeOpen=false; if(!importThemeCode(code)){ themeOpen=true; render(); alert(‘Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.’); } return; }
+  if(e.target.closest('[data-themeapply]')){ const i=document.getElementById('themeCode'); const code=i?i.value:''; themeOpen=false; if(!importThemeCode(code)){ themeOpen=true; render(); alert('Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.'); } return; }
   const rs=e.target.closest('[data-rmsched]'); if(rs){ removeSched(rs.dataset.rmsched); return; }
   const gt=e.target.closest('[data-gaptask]'); if(gt){ regapTask(gt.dataset.gaptask); return; }
   const acp=e.target.closest('[data-armchip]'); if(acp){ schArmChip(acp.dataset.armchip); return; }
@@ -1917,7 +1917,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-sleepsave]')){ saveSleepTimes(floatTo24(sleepEditWake), floatTo24(sleepEditBed)); return; }
   const pb=e.target.closest('[data-pulse]'); if(pb){ startPulse(parseInt(pb.dataset.pulse,10)||30); return; }
   const rm=e.target.closest('[data-rmcaf]'); if(rm){ removeCaffLog(rm.dataset.rmcaf); return; }
-  const cc=e.target.closest('[data-clearcaf]'); if(cc){ if(confirm('Clear all of today’s caffeine?')) clearCaffToday(); return; }
+  const cc=e.target.closest('[data-clearcaf]'); if(cc){ if(confirm("Clear all of today's caffeine?")) clearCaffToday(); return; }
   const ac=e.target.closest('[data-addcust]'); if(ac){ const n=document.getElementById('cafCustName'), m=document.getElementById('cafCustMg'); const mg=Math.round(+((m&&m.value)||0)); if(!mg||mg<=0){ alert('Enter the caffeine amount in mg.'); return; } addCustomCaff((n&&n.value)||'Custom', mg); return; }
   const cf=e.target.closest('[data-caf]'); if(cf){ logCaffeine(+cf.dataset.caf, cf.dataset.cafname||'Caffeine'); return; }
   const cs=e.target.closest('[data-cafsearch]'); if(cs){ cafOpen=!cafOpen; render(); return; }
@@ -1926,7 +1926,7 @@ document.addEventListener('click',e=>{
   const sp=e.target.closest('[data-supp]'); if(sp){ toggleSupp(sp.dataset.supp); return; }
   const md=e.target.closest('[data-medname]'); if(md){ logMedByName(md.dataset.medname); return; }
   const rmm=e.target.closest('[data-rmmed]'); if(rmm){ removeMedLog(rmm.dataset.rmmed); return; }
-  const ccm=e.target.closest('[data-clearmed]'); if(ccm){ if(confirm('Clear all of today’s meds/substances?')) clearMedToday(); return; }
+  const ccm=e.target.closest('[data-clearmed]'); if(ccm){ if(confirm("Clear all of today's meds/substances?")) clearMedToday(); return; }
   const am=e.target.closest('[data-addmed]'); if(am){ const n=document.getElementById('medCustName'), m=document.getElementById('medCustMg'); const mg=Math.round(+((m&&m.value)||0)); addCustomMed((n&&n.value)||'Custom', mg); return; }
   const rt=e.target.closest('[data-rate]'); if(rt){ captureRhr(); const f=rt.dataset.rate,v=+rt.dataset.val; draft[f]=(draft[f]===v?null:v); render(); return; }
   const wk=e.target.closest('[data-wake]'); if(wk){ captureRhr(); draft.wakeTime=(draft.wakeTime===wk.dataset.wake?null:wk.dataset.wake); render(); return; }
