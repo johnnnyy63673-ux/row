@@ -1578,7 +1578,7 @@ function srcName(s){ return s==='apple'?'Apple Watch':s==='whoop'?'Whoop':s==='f
 let whyOpen=false;
 let infoOpen=false;
 let titleRevealed=false; // 3D masked title reveal plays once on first render
-let selectedSrc=null; // which source pill is active (independent of saved data)
+let selectedSrc='fitbit';
 function infoCardHtml(){
   const days=feelDays();
   return '<div class="infoCard"><span class="infoTag">Estimate · learns over 30 days</span>'
@@ -1609,8 +1609,7 @@ function render(){
   const h=health();
   const dateStr=new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
   CURVE=buildCurve(); PEAK=peakOf(CURVE);
-  const cur=selectedSrc||(h&&h.source)||'manual';
-  const pill=(key,label)=>'<button class="srcPill '+(cur===key?'on':'')+'" data-src="'+key+'"><span class="srcDot"></span>'+label+'</button>';
+  const cur='fitbit';
 
   const gem='<svg class="gem" width="118" height="118" viewBox="0 0 100 100" style="animation:gemGlow 5s ease-in-out infinite">'
     +'<defs><linearGradient id="gemA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4fce8"/><stop offset="1" stop-color="#6EE7B7"/></linearGradient>'
@@ -1628,8 +1627,7 @@ function render(){
     +'<a class="backLink" href="index.html">← Dashboard</a></div>';
   titleRevealed=true; // subsequent re-renders show the title static (no re-flip)
 
-  const fbH=readLS('patron_health_v1'); const fbConn=fbH&&fbH.source==='fitbit'&&fbH.connected;
-  const srcRow='<div class="srcRow"><span class="srcLab">Source</span>'+pill('fitbit','Fitbit Air')+(fbConn?'<button class="srcPill" data-src="fitbit-disconnect" style="font-size:10px;opacity:.6">Disconnect</button>':'')+pill('manual','Manual')+pill('whoop','Whoop')+pill('apple','Apple Watch')+'</div>';
+  const srcRow='';
 
   // tiny always-on "how I feel right now" bar (blends now + calibrates over 30 days)
   const feelBar = feelBarHtml();
