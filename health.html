@@ -1762,7 +1762,7 @@ async function pickSource(src){
     const cached=readLS('patron_health_v1'); const haveF=cached&&cached.source==='fitbit'&&cached.connected;
     try{ const r=await fetch('/api/fitbit/data',{cache:'no-store'}); const j=await r.json();
       if(j&&j.connected){ saveHealth({source:'fitbit',connected:true,ts:Date.now(),recovery:j.recovery,sleepHours:j.sleepHours,sleepPerf:j.sleepPerf,sleepTargetHours:j.sleepTargetHours||8,bedtime:j.bedtime,wakeTime:j.wakeTime,hrv:j.hrv,rhr:j.rhr,strain:j.strain,calories:j.calories,steps:j.steps,sleepDebt:j.sleepDebt}); render(); return; }
-      if(!j||!j.connected){ if(!haveF){ if(confirm('Connect your Fitbit Air? You'll log in with Google.')) location.href='/api/fitbit/login'; else { selectedSrc=null; render(); } return; } }
+      if(!j||!j.connected){ if(!haveF){ if(confirm('Connect your Fitbit Air? You will log in with Google.')) location.href='/api/fitbit/login'; else { selectedSrc=null; render(); } return; } }
     }catch(e){}
     if(haveF){ render(); return; }
     if(confirm('Connect your Fitbit Air?')) location.href='/api/fitbit/login'; else { selectedSrc=null; render(); }
