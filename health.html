@@ -1323,7 +1323,7 @@ function planLaneHtml(){
   return head+summary+drop;
 }
 function bindSched(){ const i=document.getElementById('schInput'); if(i)i.addEventListener('keydown',e=>{ if(e.key==='Enter'){ runSchedPrompt(i.value); } });
-  const tc=document.getElementById('themeCode'); if(tc)tc.addEventListener('keydown',e=>{ if(e.key==='Enter'){ themeOpen=false; if(!importThemeCode(tc.value)){ themeOpen=true; render(); alert('Couldn’t read that theme code — paste the whole PEAK-THEME… string the creator gave you.'); } } }); }
+  const tc=document.getElementById('themeCode'); if(tc)tc.addEventListener('keydown',e=>{ if(e.key==='Enter'){ themeOpen=false; if(!importThemeCode(tc.value)){ themeOpen=true; render(); alert(‘Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.’); } } }); }
 
 /* ============================================================
  * Chart
@@ -1777,7 +1777,7 @@ async function pickSource(src){
     // Live refresh didn't confirm a connection. If we already have Whoop data, just
     // keep showing it — never bounce to a (possibly failing) re-login automatically.
     if(haveWhoop){ render(); return; }
-    if(confirm('Connect your Whoop account? You’ll log in on whoop.com.')) location.href='/api/whoop/login';
+    if(confirm(‘Connect your Whoop account? You will log in on whoop.com.’)) location.href=’/api/whoop/login’;
     else { selectedSrc=null; render(); }
     return;
   }
@@ -1849,7 +1849,7 @@ function manualCard(h){
     +'<button class="pulseBtn" data-pulse="10">10s</button><button class="pulseBtn" data-pulse="30">30s</button>'
     +'<span class="pulseRing" id="pulseRing"><svg viewBox="0 0 34 34"><circle class="pt" cx="17" cy="17" r="14"/><circle class="pf" id="pulseFill" cx="17" cy="17" r="14"/></svg><span class="pulseCount" id="pulseCount"></span></span>'
     +'<span class="chipWord" id="pulseHint" style="color:var(--muted);font-style:normal;font-family:var(--mono);font-size:10px">tap 10s/30s &amp; count beats</span></div></div>'
-    +'<button class="primary" id="mSave">'+(isToday?'Save today’s readiness':'Save '+dObj.toLocaleDateString('en-US',{month:'short',day:'numeric'}))+'</button></div>';
+    +’<button class="primary" id="mSave">’+(isToday?’Save readiness’:’Save ‘+dObj.toLocaleDateString(‘en-US’,{month:’short’,day:’numeric’}))+’</button></div>’;
 }
 function saveManual(){
   // pull resting pulse (the one free-typed field) into the draft
@@ -1899,7 +1899,7 @@ document.addEventListener('click',e=>{
   if(e.target.closest('[data-addsched]')){ const i=document.getElementById('schInput'); if(i)runSchedPrompt(i.value); return; }
   if(e.target.closest('[data-themeimport]')){ themeOpen=!themeOpen; render(); return; }
   if(e.target.closest('[data-themereset]')){ resetTheme(); return; }
-  if(e.target.closest('[data-themeapply]')){ const i=document.getElementById('themeCode'); const code=i?i.value:''; themeOpen=false; if(!importThemeCode(code)){ themeOpen=true; render(); alert('Couldn’t read that theme code — paste the whole PEAK-THEME… string the creator gave you.'); } return; }
+  if(e.target.closest('[data-themeapply]')){ const i=document.getElementById('themeCode'); const code=i?i.value:''; themeOpen=false; if(!importThemeCode(code)){ themeOpen=true; render(); alert(‘Could not read that theme code — paste the whole PEAK-THEME string the creator gave you.’); } return; }
   const rs=e.target.closest('[data-rmsched]'); if(rs){ removeSched(rs.dataset.rmsched); return; }
   const gt=e.target.closest('[data-gaptask]'); if(gt){ regapTask(gt.dataset.gaptask); return; }
   const acp=e.target.closest('[data-armchip]'); if(acp){ schArmChip(acp.dataset.armchip); return; }
