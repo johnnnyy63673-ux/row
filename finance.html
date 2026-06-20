@@ -150,7 +150,7 @@ a{color:inherit;text-decoration:none;}
 .periodSeg{display:inline-flex;align-items:center;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:var(--radius-pill);padding:2px;gap:1px;}
 .periodBtn{appearance:none;background:transparent;border:0;color:var(--muted);font-family:inherit;font-size:10px;font-weight:600;letter-spacing:0.06em;padding:4px 9px;border-radius:var(--radius-pill);cursor:pointer;transition:background var(--duration) var(--ease-premium),color var(--duration) var(--ease-premium);}
 .periodBtn:hover{color:var(--muted-strong);}
-.periodBtnActive,.periodBtnActive:hover{background:var(--mint);color:var(--mint-ink);}
+.periodBtnActive,.periodBtnActive:hover{background:var(--mint);color:var(--mint-ink);}.clearHistBtn{font-family:inherit;font-size:10px;letter-spacing:0.06em;color:var(--muted);background:none;border:none;cursor:pointer;padding:2px 8px;text-transform:uppercase;opacity:0.6;transition:opacity 150ms;}.clearHistBtn:hover{opacity:1;color:var(--red);}
 .chartSvg{display:block;width:100%;height:140px;color:var(--mint);}
 .chartGrid{stroke:rgba(255,255,255,0.04);stroke-width:0.5;}
 .chartLineStroke{filter:drop-shadow(0 0 6px currentColor);}
@@ -1438,7 +1438,7 @@ function donutArcPath(cx,cy,rO,rI,a1,a2){const x1o=cx+rO*Math.cos(a1),y1o=cy+rO*
 
 function dailyDelta(h){if(h.length<2)return null;const last=h[h.length-1];const cutoff=last.t-86400000;let baseline=null;for(let i=h.length-1;i>=0;i--){if(h[i].t<=cutoff){baseline=h[i];break;}}if(!baseline)baseline=h[0];if(last.t-baseline.t<3600000)return null;const delta=last.v-baseline.v;const pct=Math.abs(baseline.v)>0.005?delta/Math.abs(baseline.v)*100:null;return{delta,pct};}
 function dailyDeltaHTML(){const dd=dailyDelta(state.netWorthHistory);if(!dd)return'';if(Math.abs(dd.delta)<0.005)return'<span class="dailyDelta flat">flat &middot; 24h</span>';
-  const up=dd.delta>0,sign=up?'+':'â',amt=fmt(Math.abs(dd.delta));const pctLabel=dd.pct==null?'':(up?'+':'â')+(Math.abs(dd.pct)>=100?Math.abs(dd.pct).toFixed(0):Math.abs(dd.pct).toFixed(2))+'%';
+  const up=dd.delta>0,sign=up?'+':'-',amt=fmt(Math.abs(dd.delta));const pctLabel=dd.pct==null?'':(up?'+':'-')+(Math.abs(dd.pct)>=100?Math.abs(dd.pct).toFixed(0):Math.abs(dd.pct).toFixed(2))+'%';
   return '<span class="dailyDelta '+(up?'up':'down')+'">'+sign+esc(amt)+(pctLabel?'<span class="dailyDeltaPct">'+pctLabel+'</span>':'')+'<span class="dailyDeltaWindow">&middot; 24h</span></span>';}
 
 function goalRingHTML(){const goalCHF=getGoalCHF();const netWorth=netWorthChf(state.accounts);
@@ -1482,7 +1482,7 @@ function accountCardHTML(cat){const netWorth=netWorthChf(state.accounts);
   const items=state.accounts.filter(a=>a.type===cat.key);const total=items.reduce((s,a)=>s+a.amountCHF,0);const isDebt=cat.key==='debt';
   const pct=!isDebt&&netWorth>0&&total>0?total/netWorth*100:null;const showAdd=showAddFor(cat.key,items.length>0);
   return '<div class="accountCard"><div class="accountHead"><span class="accountLabel">'+esc(cat.label)+'</span>'
-    +'<span class="accountTotal '+(isDebt?'accountTotalDebt':'')+'">'+(isDebt&&total>0?'â':'')+esc(fmt(total))+(pct!=null?'<span class="accountTotalPct">&middot; '+pct.toFixed(1)+'%</span>':'')+'</span></div>'
+    +'<span class="accountTotal '+(isDebt?'accountTotalDebt':'')+'">'+(isDebt&&total>0?'-':'')+esc(fmt(total))+(pct!=null?'<span class="accountTotalPct">&middot; '+pct.toFixed(1)+'%</span>':'')+'</span></div>'
     +'<div class="accountList">'+items.map(accountRowHTML).join('')+'</div>'
     +(showAdd?quickAddHTML(cat.key,cat.pn,cat.pa):'<button class="addToggle" data-act="show-add" data-type="'+cat.key+'">+ add</button>')
     +'</div>';}
@@ -1509,11 +1509,11 @@ const CHART_PERIODS=[{k:'1D',d:1},{k:'1W',d:7},{k:'1M',d:30},{k:'1Y',d:365},{k:'
 function chartHTML(){const NW_W=600,NW_H=200,NW_PAD=8;const period=CHART_PERIODS.find(p=>p.k===ui.chartPeriod)||CHART_PERIODS[4];const full=state.netWorthHistory;
   let history=full;if(period.d!=null){const cutoff=Date.now()-period.d*86400000;const inWin=full.filter(p=>p.t>=cutoff);if(inWin.length>=2||full.length===0)history=inWin;else{let anchor=null;for(let i=full.length-1;i>=0;i--){if(full[i].t<cutoff){anchor=full[i];break;}}history=anchor?[anchor].concat(inWin):inWin;}}
   const periodName=period.k==='ALL'?'All-time':period.k;
-  const toggle='<div class="periodSeg">'+CHART_PERIODS.map(p=>'<button class="periodBtn '+(p.k===ui.chartPeriod?'periodBtnActive':'')+'" data-act="chart-period" data-p="'+p.k+'">'+(p.k==='ALL'?'All':p.k)+'</button>').join('')+'</div>';
+  const toggle='<div class="periodSeg">'+CHART_PERIODS.map(p=>'<button class="periodBtn '+(p.k===ui.chartPeriod?'periodBtnActive':'')+'" data-act="chart-period" data-p="'+p.k+'">'+(p.k==='ALL'?'All':p.k)+'</button>').join('')+'</div>'+(state.netWorthHistory.length>0?'<button class="clearHistBtn" data-act="clear-history">reset graph</button>':'');
   const stats=chartStatsHTML(history);
   if(history.length<1)return '<div class="chartWrap"><div class="chartHead"><span class="chartLabel">'+periodName+'</span>'+toggle+'</div><div class="chartEmpty">Add or edit an asset to start tracking net worth over time.</div>'+stats+'</div>';
   const first=history[0].v,last=history[history.length-1].v,change=last-first;const direction=Math.abs(change)<0.005?'flat':change>0?'up':'down';const color=direction==='up'?'var(--mint)':direction==='down'?'var(--red)':'var(--muted)';
-  let deltaLabel='-';if(direction==='flat')deltaLabel='Flat';else if(Math.abs(first)<0.5){deltaLabel=(change>0?'+':'â')+fmt(Math.abs(change));}else{const pct=change/Math.abs(first)*100;const ap=Math.abs(pct);const ps=ap>=1000?'>999':ap>=100?ap.toFixed(0):ap>=10?ap.toFixed(1):ap.toFixed(2);deltaLabel=(change>0?'+':'â')+ps+'%';}
+  let deltaLabel='-';if(direction==='flat')deltaLabel='Flat';else if(Math.abs(first)<0.5){deltaLabel=(change>0?'+':'-')+fmt(Math.abs(change));}else{const pct=change/Math.abs(first)*100;const ap=Math.abs(pct);const ps=ap>=1000?'>999':ap>=100?ap.toFixed(0):ap>=10?ap.toFixed(1):ap.toFixed(2);deltaLabel=(change>0?'+':'-')+ps+'%';}
   const vals=history.map(p=>p.v);const minV=Math.min.apply(null,vals),maxV=Math.max.apply(null,vals);const range=maxV-minV||Math.max(1,Math.abs(maxV));
   let lineD='',areaD='';if(history.length===1){const y=NW_H/2;lineD='M0,'+y+' L'+NW_W+','+y;areaD=lineD+' L'+NW_W+','+NW_H+' L0,'+NW_H+' Z';}else{const points=history.map((p,i)=>({x:i/(history.length-1)*NW_W,y:NW_H-NW_PAD-(p.v-minV)/range*(NW_H-NW_PAD*2)}));lineD=smoothPath(points);const lp=points[points.length-1],fp=points[0];areaD=lineD+' L'+lp.x+','+NW_H+' L'+fp.x+','+NW_H+' Z';}
   return '<div class="chartWrap"><div class="chartHead"><div class="chartHeadLeft"><span class="chartLabel">'+periodName+'</span><span class="chartDelta '+(direction==='up'?'up':direction==='down'?'down':'')+'">'+deltaLabel+'</span></div>'+toggle+'</div>'
@@ -1541,16 +1541,16 @@ function activityHTML(){const entries=state.activity.slice().sort((a,b)=>b.ts-a.
   const now=new Date();const todayStart=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();const yStart=todayStart-86400000;const wStart=todayStart-7*86400000;
   const b={today:[],yesterday:[],thisWeek:[],earlier:[]};entries.forEach(e=>{if(e.ts>=todayStart)b.today.push(e);else if(e.ts>=yStart)b.yesterday.push(e);else if(e.ts>=wStart)b.thisWeek.push(e);else b.earlier.push(e);});
   let inner='';ACTIVITY_BUCKETS.forEach(bk=>{const list=b[bk.key];if(!list.length)return;inner+='<div class="activityBucket"><div class="activityBucketLabel">'+bk.label+'</div>'+list.map(e=>{const color=TYPE_COLORS[e.accountType];const up=e.deltaCHF>=0;const kind=e.kind==='edit'?'edit':e.kind==='delete'?'delete':'add';
-      return '<div class="activityRow"><span class="activityBar" style="background:'+color+'"></span><div class="activityInfo"><div class="activityName">'+esc(e.name||'(unnamed)')+'</div><div class="activityMeta">'+TYPE_LABELS[e.accountType]+' &middot; '+kind+'</div></div><span class="activityAmt '+(up?'up':'down')+'">'+(up?'+':'â')+esc(fmt(Math.abs(e.deltaCHF)))+'</span><span class="activityDate">'+formatActivityDate(e.ts)+'</span></div>';}).join('')+'</div>';});
+      return '<div class="activityRow"><span class="activityBar" style="background:'+color+'"></span><div class="activityInfo"><div class="activityName">'+esc(e.name||'(unnamed)')+'</div><div class="activityMeta">'+TYPE_LABELS[e.accountType]+' &middot; '+kind+'</div></div><span class="activityAmt '+(up?'up':'down')+'">'+(up?'+':'-')+esc(fmt(Math.abs(e.deltaCHF)))+'</span><span class="activityDate">'+formatActivityDate(e.ts)+'</span></div>';}).join('')+'</div>';});
   return '<div class="activity"><div class="activityHead"><span class="chartLabel">Recent activity</span><span class="chartDelta">'+entries.length+' event'+(entries.length===1?'':'s')+'</span></div><div class="activityList">'+inner+'</div></div>';}
 
 function viewNet(){const netWorth=netWorthChf(state.accounts);const assets=assetsChf(state.accounts);const debt=debtChf(state.accounts);const runway=runwayMonths(state.accounts,state.subscriptions,state.orders);
   const isFirstRun=state.accounts.length===0;const goalCHF=getGoalCHF();const goalPace=goalCHF?projectGoalDate(state.netWorthHistory,goalCHF):null;
-  const byType=netWorthByType(state.accounts);const parts=[];['bank','stocks','crypto','other'].forEach(t=>{if(byType[t]>0)parts.push(TYPE_LABELS[t]+': '+fmt(byType[t]));});const breakdown=parts.join('  &middot;  ');
+  const byType=netWorthByType(state.accounts);const parts=[];['bank','stocks','crypto','other'].forEach(t=>{if(byType[t]>0)parts.push(TYPE_LABELS[t]+': '+fmt(byType[t]));});const breakdown=parts.join('  ·  ');
   let hero='<div class="nwHero '+(isFirstRun?'nwHeroFirstRun':'')+'"><div class="nwHeroMain"><div class="nwHeroLabel">Total net worth</div>'
     +'<div class="nwHeroNumRow"><span class="nwHeroNum">'+esc(fmt(netWorth))+'</span>'+dailyDeltaHTML()+(!isFirstRun?goalRingHTML():'')+'</div>'
-    +(breakdown?'<div class="nwHeroBreakdown">'+esc(breakdown)+'</div>':'')
-    +(debt>0?'<div class="nwHeroLiab">Assets '+esc(fmt(assets))+' <span class="nwHeroLiabSep">&middot;</span> <span class="nwHeroDebt">Debt â'+esc(fmt(debt))+'</span></div>':'')
+    +(breakdown?'<div class="nwHeroBreakdown">'+breakdown+'</div>':'')
+    +(debt>0?'<div class="nwHeroLiab">Assets '+esc(fmt(assets))+' <span class="nwHeroLiabSep">&middot;</span> <span class="nwHeroDebt">Debt -'+esc(fmt(debt))+'</span></div>':'')
     +(runway!=null?'<div class="nwHeroRunway" title="Bank cash Ã· monthly burn">â <strong>'+(runway>=99?'99+':runway.toFixed(runway<10?1:0))+'</strong> months of runway</div>':'')
     +(goalCHF!=null&&goalPace?'<div class="nwHeroRunway" title="Projected from your recent trend">Goal: on pace for <strong>'+goalPace.toLocaleDateString('en-US',{month:'short',year:'numeric'})+'</strong></div>':'')
     +(isFirstRun?'<div class="firstRunHint">Import a statement screenshot, or add an account manually below to start tracking.</div>':'')
@@ -1613,7 +1613,7 @@ function spendingInsightsHTML(){if(!state.orders.length)return'';const recap=mon
   const monthLabel=new Date().toLocaleDateString('en-US',{month:'long'});const over=budgetCHF!=null&&recap.thisMonthCHF>budgetCHF;const pctOfBudget=budgetCHF&&budgetCHF>0?Math.min(100,recap.thisMonthCHF/budgetCHF*100):0;const tone=budgetCHF==null?'':over?'bad':pctOfBudget>=80?'warn':'';
   let html='<div class="insightsCard"><div class="insightsHead"><div><div class="chartLabel">'+monthLabel+' spending</div><div class="insightsTotal">'+esc(fmt(recap.thisMonthCHF))+'</div></div>'
     +(recap.deltaPct!=null?'<span class="insightsDelta '+(recap.deltaCHF>0?'down':'up')+'">'+(recap.deltaCHF>0?'â':'â')+' '+Math.abs(recap.deltaPct).toFixed(0)+'% vs last mo</span>':'')+'</div>';
-  if(recap.thisMonthIncomeCHF>0)html+='<div class="cashflowRow"><span class="cashflowIn">+'+esc(fmt(recap.thisMonthIncomeCHF))+' in</span><span class="cashflowOut">â'+esc(fmt(recap.thisMonthCHF))+' out</span><span class="cashflowNet '+(recap.netCHF>=0?'up':'down')+'">net '+(recap.netCHF>=0?'+':'â')+esc(fmt(Math.abs(recap.netCHF)))+'<span class="cashflowSaved"> &middot; '+(recap.netCHF>=0?'kept':'over')+' '+Math.abs(Math.round(recap.netCHF/recap.thisMonthIncomeCHF*100))+'%</span></span></div>';
+  if(recap.thisMonthIncomeCHF>0)html+='<div class="cashflowRow"><span class="cashflowIn">+'+esc(fmt(recap.thisMonthIncomeCHF))+' in</span><span class="cashflowOut">-'+esc(fmt(recap.thisMonthCHF))+' out</span><span class="cashflowNet '+(recap.netCHF>=0?'up':'down')+'">net '+(recap.netCHF>=0?'+':'-')+esc(fmt(Math.abs(recap.netCHF)))+'<span class="cashflowSaved"> &middot; '+(recap.netCHF>=0?'kept':'over')+' '+Math.abs(Math.round(recap.netCHF/recap.thisMonthIncomeCHF*100))+'%</span></span></div>';
   html+='<div class="budgetBlock">';
   if(budgetCHF==null)html+='<button class="addToggle" data-act="edit-budget">+ set a monthly budget</button>';
   else html+='<div class="budgetBar"><div class="budgetBarFill '+tone+'" style="width:'+pctOfBudget+'%"></div></div><div class="budgetMeta"><span class="'+(tone||'up')+'">'+(over?esc(fmt(recap.thisMonthCHF-budgetCHF))+' over budget':esc(fmt(budgetCHF-recap.thisMonthCHF))+' left this month')+'</span><button class="linkAction" data-act="edit-budget">'+esc(fmt(budgetCHF))+' budget &middot; edit</button></div>';
@@ -1628,7 +1628,7 @@ function addOrderFormHTML(){const mode=ui.orderMode;const isBought=mode==='bough
     +'<input class="quickAddInput" type="number" inputmode="decimal" step="0.01" data-field="cost" placeholder="'+(isIncome?'Amount':'Cost')+' ('+state.currency+')">';
   if(!isIncome)fields+='<select class="quickAddInput" data-field="from">'+acctOpts+'</select>';
   if(!isBought&&!isIncome)fields+='<input class="quickAddInput" type="date" data-field="arrival" title="Expected arrival">';
-  fields+='<button class="quickAddBtn" data-act="add-order">'+(isIncome?'+ Log income':isBought?'â Log purchase':'+ Add order')+'</button>';
+  fields+='<button class="quickAddBtn" data-act="add-order">'+(isIncome?'+ Log income':isBought?'- Log purchase':'+ Add order')+'</button>';
   const hint=isIncome?'Log money coming in (paycheck, refund, sale). It wonât touch an account.':isBought?'Type a cost. We will deduct it from the chosen account on Add.':'Type a cost. Preview will show what % of net worth it takes.';
   return '<div class="addCard"><div class="addCardHead"><div class="addEyebrow">'+eyebrow+'</div><div class="modeSeg" role="group">'
     +'<button class="modeBtn '+(mode==='incoming'?'modeBtnActive':'')+'" data-act="order-mode" data-mode="incoming">Ordered</button>'
@@ -1641,7 +1641,7 @@ function orderCardHTML(o){if(o.direction==='in')return '<div class="ordCard ordI
   let pctText,sev,frozen=false;if(isDeducted&&typeof o.pctAtDeduction==='number'){pctText=o.pctAtDeduction.toFixed(2)+'% of NW';sev=pctClass(o.pctAtDeduction);frozen=true;}else if(netWorth>0){const pct=o.amountCHF/netWorth*100;pctText=pct.toFixed(2)+'% of NW';sev=pctClass(pct);}else{pctText='- of NW';sev=null;}
   const sevCls=sev==='good'?'good':sev==='warn'?'warn':sev==='bad'?'bad':'';
   let datePill;if(isDeducted)datePill='<span class="ordPill ordDate">bought '+new Date(o.deductedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})+'</span>';else if(arr)datePill='<span class="ordPill ordDate '+(arr.cls==='today'?'today':arr.cls==='imminent'?'imminent':arr.cls==='past'?'past':'')+'">'+arr.label+'</span>';else datePill='<span class="ordPill">no arrival date</span>';
-  const foot=isDeducted?'<span class="ordDeductedPill">Deducted from '+esc(o.deductedFromName||fromName)+'</span><button class="ordDeductBtn" data-act="undo-deduct" data-id="'+o.id+'">Undo</button>':'<button class="ordDeductBtn" data-act="deduct" data-id="'+o.id+'">â Deduct from net worth</button>';
+  const foot=isDeducted?'<span class="ordDeductedPill">Deducted from '+esc(o.deductedFromName||fromName)+'</span><button class="ordDeductBtn" data-act="undo-deduct" data-id="'+o.id+'">Undo</button>':'<button class="ordDeductBtn" data-act="deduct" data-id="'+o.id+'">- Deduct from net worth</button>';
   return '<div class="ordCard '+(isDeducted?'deducted':'')+'"><div class="ordHead"><div class="ordName">'+esc(o.name)+'</div><div class="ordAmt">'+esc(fmt(o.amountCHF))+'</div><button class="iconBtn" data-act="del-order" data-id="'+o.id+'" title="Remove">&#215;</button></div><div class="ordMetaRow"><span class="ordPill">from &middot; '+esc(fromName)+'</span><span class="ordPill '+sevCls+' '+(frozen?'frozen':'')+'">'+pctText+'</span>'+datePill+'</div><div class="ordFoot">'+foot+'</div></div>';}
 
 function viewOrders(){const sorted=state.orders.slice().sort((a,b)=>{if(!a.date&&!b.date)return(b.deductedAt||b.ts)-(a.deductedAt||a.ts);if(!a.date)return 1;if(!b.date)return-1;const cmp=a.date.localeCompare(b.date);return cmp!==0?cmp:b.ts-a.ts;});
@@ -1673,9 +1673,9 @@ function buildSnapshot(){const ccy=state.currency;const d=chf=>Math.round(chfToD
   return{currency:ccy,netWorthCHF:d(netWorth),monthlyBurnCHF:d(monthlyBurn),assetsCHF:d(assets),debtCHF:d(debt),cryptoCHF:d(crypto),upcomingBills:bills,alerts,thisMonthSpendCHF:d(recap.thisMonthCHF),lastMonthSpendCHF:d(recap.lastMonthCHF),thisMonthIncomeCHF:d(recap.thisMonthIncomeCHF),netCashFlowCHF:d(recap.netCHF),budgetCHF:budgetCHF==null?null:d(budgetCHF),topCategories:topCats,runwayMonths:runway==null?null:Math.round(runway*10)/10,goalCHF:goalCHF==null?null:d(goalCHF),goalPct};}
 function snapSignature(s){return[s.netWorthCHF,s.monthlyBurnCHF,s.thisMonthSpendCHF,s.thisMonthIncomeCHF,s.debtCHF,s.upcomingBills.length,s.alerts.length,s.budgetCHF==null?'-':s.budgetCHF,s.runwayMonths==null?'-':s.runwayMonths,s.goalCHF==null?'-':s.goalCHF].join(':');}
 function snapshotText(s){const ccy=s.currency||'CHF';const f=(chf)=>ccy+' '+(Number(chf)||0).toLocaleString('en-US',{maximumFractionDigits:0});const L=[];
-  L.push('Net worth: '+f(s.netWorthCHF));if(s.debtCHF>0)L.push('Debt: '+(s.assetsCHF!=null?f(s.assetsCHF)+' assets â ':'')+f(s.debtCHF)+' owed');if(s.cryptoCHF>0)L.push('Crypto holdings: '+f(s.cryptoCHF));
+  L.push('Net worth: '+f(s.netWorthCHF));if(s.debtCHF>0)L.push('Debt: '+(s.assetsCHF!=null?f(s.assetsCHF)+' assets - ':'')+f(s.debtCHF)+' owed');if(s.cryptoCHF>0)L.push('Crypto holdings: '+f(s.cryptoCHF));
   L.push('Subscriptions: '+f(s.monthlyBurnCHF)+' / month');if(s.thisMonthSpendCHF!=null)L.push('Spent this month: '+f(s.thisMonthSpendCHF)+(s.lastMonthSpendCHF!=null?' (last month '+f(s.lastMonthSpendCHF)+')':''));
-  if(s.thisMonthIncomeCHF>0)L.push('Income this month: '+f(s.thisMonthIncomeCHF)+(s.netCashFlowCHF!=null?', net '+(s.netCashFlowCHF>=0?'+':'â')+f(Math.abs(s.netCashFlowCHF)):''));
+  if(s.thisMonthIncomeCHF>0)L.push('Income this month: '+f(s.thisMonthIncomeCHF)+(s.netCashFlowCHF!=null?', net '+(s.netCashFlowCHF>=0?'+':'-')+f(Math.abs(s.netCashFlowCHF)):''));
   if(s.runwayMonths!=null)L.push('Runway: ~'+(s.runwayMonths>=99?'99+':s.runwayMonths.toFixed(1))+' months of cash cushion');if(s.budgetCHF!=null)L.push('Monthly budget: '+f(s.budgetCHF));
   if(s.goalCHF!=null)L.push('Net-worth goal: '+f(s.goalCHF)+(s.goalPct!=null?' ('+Math.round(s.goalPct)+'% there)':''));
   if(s.topCategories&&s.topCategories.length)L.push('Top spend: '+s.topCategories.slice(0,4).map(c=>c.category+' '+f(c.totalCHF)).join(', '));
@@ -1831,7 +1831,7 @@ function previewHTML(){const d=modal.data;const ccy=modal.extractedCcy;const dif
     +'<label class="receiptField"><span class="receiptFieldLabel">Paid from <span class="receiptRequired">&middot;required</span></span><select class="quickAddInput '+(!modal.fromAccountId?'quickAddInputAlert':'')+'" data-act="receipt-account">'+acctOpts+'</select></label>'
     +(modal.date?'<div class="receiptMeta">Receipt date: <span>'+esc(modal.date)+'</span></div>':'')+'</div>';
   const can=modal.merchantDraft.trim()!==''&&parseFloat(modal.totalDraft)>0&&modal.fromAccountId!=='';
-  return head+fields+'<div class="importActions"><button class="importSecondary" data-act="modal-retry">upload another</button><button class="importPrimary" data-act="confirm-receipt" '+(can?'':'disabled')+'>â Log purchase</button></div>';}
+  return head+fields+'<div class="importActions"><button class="importSecondary" data-act="modal-retry">upload another</button><button class="importPrimary" data-act="confirm-receipt" '+(can?'':'disabled')+'>- Log purchase</button></div>';}
 
 function keysModalHTML(){const a=esc(keys.anthropic||''),f=esc(keys.finnhub||'');
   return '<div class="importOverlay" data-act="modal-overlay"><div class="importPanel"><header class="importHead"><div><div class="importEyebrow">API keys</div><h2 class="importTitle">Power the <em>AI features</em></h2></div><button class="importClose" data-act="modal-close">&#215;</button></header>'
@@ -1882,7 +1882,7 @@ function onClick(e){const t=e.target.closest('[data-act]');if(!t)return;const ac
     case'show-add':ui.showAdd[t.getAttribute('data-type')]=true;render();return;
     case'show-manual-stocks':ui.showManualStocks=true;render();return;
     case'show-manual-crypto':ui.showManualCrypto=true;render();return;
-    case'chart-period':ui.chartPeriod=t.getAttribute('data-p');render();return;
+    case'chart-period':ui.chartPeriod=t.getAttribute('data-p');render();return;case'clear-history':if(confirm('Reset graph history? Your accounts stay, only snapshots are cleared.')){state.netWorthHistory=[];commit();pushNwSnapshot();}return;
     case'refresh-stocks':if(!keys.finnhub){openKeysModal('Live stock prices need a Finnhub key (optional).');return;}refreshStockQuotes();return;
     case'refresh-crypto':refreshCryptoQuotes();return;
     case'del-account':actions.deleteAccount(id);return;
