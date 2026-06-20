@@ -1,4 +1,4 @@
-﻿<!doctype html>
+﻿﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -1204,9 +1204,10 @@ const TYPE_COLORS={bank:'#6EE7B7',stocks:'#A7F3D0',crypto:'#34D399',debt:'#F8717
 const SUBS_COLOR='#F59E0B';
 const TYPE_LABELS={bank:'Bank',stocks:'Stocks',crypto:'Crypto',debt:'Debt',other:'Other'};
 
-function defaultState(){return{version:1,currency:'CHF',activeTab:'net',accounts:[],subscriptions:[],orders:[],wishlist:[],activity:[],netWorthHistory:[]};}
+function defaultState(){return{version:1,currency:'USD',activeTab:'net',accounts:[],subscriptions:[],orders:[],wishlist:[],activity:[],netWorthHistory:[]};}
 
 let state = loadState();
+state.currency = 'USD';
 let rates = {CHF:1,USD:1,EUR:1,GBP:1};
 let stockQuotes = {};   // ticker -> {priceUSD, changePct, fetchedAt}
 let cryptoQuotes = {};  // coinId -> {priceCHF, changePct, fetchedAt}
@@ -1403,12 +1404,10 @@ function spawnParticles(){const root=document.getElementById('wb-particles');if(
 function headerHTML(){
   const keySet=!!keys.anthropic;
   return '<header class="header"><div class="headerLeft">'
-    +'<a class="back" href="#" data-act="noop"><span class="backArrow">â</span> Vitality</a>'
+    +'<a class="back" href="index.html"><span class="backArrow">&#8592;</span> Dashboard</a>'
     +'<h1 class="title">Finance</h1>'
-    +'<p class="subtitle">Net worth Â· subs Â· orders Â· wishlist</p></div>'
-    +'<div class="headerRight"><div class="currencySeg" role="group" aria-label="Display currency">'
-    +CURRENCIES.map(c=>'<button class="currencyBtn '+(c===state.currency?'currencyBtnActive':'')+'" data-act="currency" data-c="'+c+'">'+c+'</button>').join('')
-    +'</div><button class="keyBtn '+(keySet?'set':'')+'" data-act="open-keys" title="API keys for AI features">'+(keySet?'â keys':'â keys')+'</button></div></header>';
+    +'<p class="subtitle">Net worth &middot; subs &middot; orders &middot; wishlist</p></div>'
+    +'<div class="headerRight"><button class="keyBtn '+(keySet?'set':'')+'"  data-act="open-keys" title="API keys for AI features">&#128273; keys</button></div></header>';
 }
 function tabBarHTML(){const labels={net:'net worth',subs:'subs',orders:'orders',wish:'wishlist',coach:'coach'};
   return '<nav class="tabBar" aria-label="Finance sections"><div class="tabBarInner">'+TAB_KEYS.map(k=>'<button class="tab '+(k===state.activeTab?'active':'')+'" data-act="tab" data-tab="'+k+'">'+labels[k]+'</button>').join('')+'</div></nav>';}
@@ -1556,7 +1555,7 @@ function viewNet(){const netWorth=netWorthChf(state.accounts);const assets=asset
     +(goalCHF!=null&&goalPace?'<div class="nwHeroRunway" title="Projected from your recent trend">Goal: on pace for <strong>'+goalPace.toLocaleDateString('en-US',{month:'short',year:'numeric'})+'</strong></div>':'')
     +(isFirstRun?'<div class="firstRunHint">Import a statement screenshot, or add an account manually below to start tracking.</div>':'')
     +'</div>'
-    +'<button class="importTrigger '+(isFirstRun?'importTriggerLarge':'')+'" data-act="open-import-statement"><span class="importTriggerIcon">â</span><span class="importTriggerText"><span class="importTriggerTitle">Import from screenshot</span><span class="importTriggerSub">'+(isFirstRun?'fastest way to get started':'read a statement in 5 seconds')+'</span></span></button></div>';
+    +'<button class="importTrigger '+(isFirstRun?'importTriggerLarge':'')+'" data-act="open-import-statement"><span class="importTriggerIcon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.25 10.75V4.56L5.03 6.78A.75.75 0 0 1 3.97 5.72l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 1 1-1.06 1.06L8.75 4.56v6.19a.75.75 0 0 1-1.5 0zM2.5 13.25a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5a.75.75 0 0 1-.75-.75z"/></svg></span><span class="importTriggerText"><span class="importTriggerTitle">Import from screenshot</span><span class="importTriggerSub">'+(isFirstRun?'fastest way to get started':'read a statement in 5 seconds')+'</span></span></button></div>';
   return '<section class="section"><div class="sectionEyebrow"><span>Net worth</span></div>'+hero
     +'<div class="overviewGrid">'+chartHTML()+donutHTML()+'</div>'
     +'<div class="accountsGrid">'+CATEGORY_ORDER.map(accountCardHTML).join('')+'</div>'
@@ -1602,7 +1601,7 @@ function viewSubs(){const monthlyTotal=state.subscriptions.reduce((s,sub)=>s+mon
     :'<div>'+state.subscriptions.map(sub=>ui.editingSubId===sub.id?subEditRowHTML(sub):subRowHTML(sub)).join('')+'</div>';
   return '<section class="section"><div class="sectionEyebrow"><span>Active subscriptions</span><span class="sectionCount">'+state.subscriptions.length+' '+(state.subscriptions.length===1?'sub':'subs')+(monthlyTotal>0?'<span class="sectionCountSep"> Â· '+esc(fmt(monthlyTotal*12))+' / yr</span>':'')+'</span></div>'
     +alertsHTML+billsHTML
-    +'<button class="importTrigger" data-act="open-import-subs"><span class="importTriggerIcon">â</span><span class="importTriggerText"><span class="importTriggerTitle">Import subscriptions</span><span class="importTriggerSub">snap a billing page, pull every sub at once</span></span></button>'
+    +'<button class="importTrigger" data-act="open-import-subs"><span class="importTriggerIcon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.25 10.75V4.56L5.03 6.78A.75.75 0 0 1 3.97 5.72l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 1 1-1.06 1.06L8.75 4.56v6.19a.75.75 0 0 1-1.5 0zM2.5 13.25a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5a.75.75 0 0 1-.75-.75z"/></svg></span><span class="importTriggerText"><span class="importTriggerTitle">Import subscriptions</span><span class="importTriggerSub">snap a billing page, pull every sub at once</span></span></button>'
     +'<div class="addCard"><div class="subsHero"><div><div class="nwHeroLabel">Monthly burn</div><div class="subsHeroNum">'+esc(fmt(monthlyTotal))+'<span class="subsHeroNumSuffix">/ mo</span></div>'+(monthlyTotal>0?'<div class="subsHeroSub">~'+esc(fmt(monthlyTotal*12))+' per year</div>':'')+'</div></div></div>'
     +addForm+list+'</section>';}
 
@@ -1649,7 +1648,7 @@ function viewOrders(){const sorted=state.orders.slice().sort((a,b)=>{if(!a.date&
   const list=state.orders.length===0?'<div class="emptyState"><div class="emptyTitle">Nothing on the way.</div><div class="emptyBody">Log an order above. Pick the account it comes out of and the expected arrival date. The dashboard will show what % of your net worth it costs.</div></div>':'<div>'+sorted.map(orderCardHTML).join('')+'</div>';
   return '<section class="section"><div class="sectionEyebrow"><span>Incoming orders</span><span class="sectionCount">'+state.orders.length+' '+(state.orders.length===1?'item':'items')+'</span></div>'
     +spendingInsightsHTML()
-    +'<button class="importTrigger" data-act="open-import-receipt"><span class="importTriggerIcon">â</span><span class="importTriggerText"><span class="importTriggerTitle">Import receipt</span><span class="importTriggerSub">snap a receipt, auto-log the purchase</span></span></button>'
+    +'<button class="importTrigger" data-act="open-import-receipt"><span class="importTriggerIcon"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M7.25 10.75V4.56L5.03 6.78A.75.75 0 0 1 3.97 5.72l3.25-3.25a.75.75 0 0 1 1.06 0l3.25 3.25a.75.75 0 1 1-1.06 1.06L8.75 4.56v6.19a.75.75 0 0 1-1.5 0zM2.5 13.25a.75.75 0 0 1 .75-.75h9.5a.75.75 0 0 1 0 1.5h-9.5a.75.75 0 0 1-.75-.75z"/></svg></span><span class="importTriggerText"><span class="importTriggerTitle">Import receipt</span><span class="importTriggerSub">snap a receipt, auto-log the purchase</span></span></button>'
     +addOrderFormHTML()+list+'</section>';}
 
 /* ===================== WISHLIST VIEW ===================== */
