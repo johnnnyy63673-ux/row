@@ -1112,6 +1112,9 @@ a{color:inherit;text-decoration:none;}
    re-parented into the active coach stage on each render. */
 import * as THREE from 'three';
 (function(){
+  // iOS Safari crashes on MeshPhysicalMaterial with transmission — skip WebGL and use CSS gem
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+  if(isIOS){window.CoachGem={mount(){}};return;}
   const PARAMS={rotationSpeed:0.08,wobbleAmplitude:0.10,roughness:0.08,transmission:0.82,thickness:1.8,ior:1.55,mintTint:0.12,keyWarmth:0.55};
   const MINT=new THREE.Color('#6EE7B7'),WARM=new THREE.Color('#FFE2B5'),COOL_MINT=new THREE.Color('#A7F3D0'),NEUTRAL=new THREE.Color('#F2FFF8');
   const IRIS={glass:'#D8CFFF',atten:'#8E7BFF',emissive:'#1c1640',wire:0xc7bcff,
