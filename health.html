@@ -163,6 +163,39 @@ a{color:inherit;text-decoration:none;}
 .vt-empty{text-align:center;padding:48px 20px;}
 .vt-empty-title{font-family:var(--serif);font-style:italic;font-size:24px;margin-bottom:10px;}
 .vt-empty-sub{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);line-height:1.7;}
+
+/* recovery hero card */
+.vt-rec-card{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap;}
+.vt-rec-left{display:flex;flex-direction:column;gap:4px;min-width:90px;}
+.vt-rec-score{font-family:var(--font-serif);font-style:italic;font-size:64px;font-weight:400;line-height:1;}
+.vt-rec-badge{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;margin-top:4px;}
+.vt-rec-badge .dot{width:6px;height:6px;border-radius:50%;}
+.vt-rec-right{flex:1;min-width:140px;display:flex;flex-direction:column;gap:0;}
+.vt-metric{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);}
+.vt-metric:last-child{border-bottom:0;}
+.vt-metric-lbl{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+.vt-metric-val{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--fg);}
+
+/* recovery trend graph */
+.vt-graph-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.vt-graph-title{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted2);}
+.vt-graph-avg{font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:10px;}
+.vt-graph-avg b{color:var(--fg);}
+.vt-graph-empty{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);padding:24px 0;text-align:center;}
+.vt-range-seg{display:inline-flex;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--pill);padding:3px;gap:2px;}
+.vt-range-btn{appearance:none;background:transparent;border:0;cursor:pointer;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;padding:5px 12px;border-radius:var(--pill);transition:all .18s;}
+.vt-range-btn.on{background:rgba(110,231,183,.15);color:var(--mint);}
+
+/* 4-up vitals grid */
+.vt-vitals-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.vt-vital-card{background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:var(--radius-xl);padding:16px 14px;display:flex;flex-direction:column;gap:2px;}
+.vt-vital-name{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.vt-vital-val{font-family:var(--font-serif);font-style:italic;font-size:32px;font-weight:400;line-height:1;color:var(--fg);}
+.vt-vital-unit{font-family:var(--mono);font-size:11px;color:var(--muted);margin-left:2px;}
+.vt-vital-sub{font-family:var(--mono);font-size:10px;letter-spacing:.04em;margin-top:6px;}
+.vt-vital-sub.up{color:var(--mint);}
+.vt-vital-sub.down{color:var(--red);}
+.vt-vital-sub.flat{color:var(--muted);}
 .card{ position:relative; border:1px solid var(--line); border-radius:var(--radius); background:var(--panel); padding:26px; transition:transform .3s var(--ease), border-color .3s var(--ease), box-shadow .3s var(--ease); box-shadow:0 1px 0 rgba(110,231,183,0.04) inset, 0 18px 40px -28px rgba(0,0,0,0.9); }
 .card:hover{ border-color:var(--line2); box-shadow:0 1px 0 rgba(110,231,183,0.08) inset, 0 22px 50px -26px rgba(0,0,0,0.95), 0 0 40px -22px var(--glow); }
 /* compact tracker bits */
@@ -1499,6 +1532,7 @@ let infoOpen=false;
 let titleRevealed=false;
 let selectedSrc='fitbit';
 let activeTab='rings';
+let vitalsRange='7d';
 function infoCardHtml(){
   const days=feelDays();
   return '<div class="infoCard"><span class="infoTag">Estimate · learns over 30 days</span>'
@@ -1581,6 +1615,51 @@ function animateRings(h){
     if(stEl) stEl.style.strokeDashoffset=cSt*(1-strain);
   });
 }
+function vitalsBarGraph(nDays){
+  const log=loadLog(); const today=dayKey();
+  const days=[];
+  for(let i=nDays-1;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const k=dayKey(d); const entry=log.days[k];
+    const rec=entry&&entry.readiness!=null?entry.readiness:(entry&&entry.recovery!=null?entry.recovery:null);
+    days.push({d,rec,tn:toneOf(rec),isToday:k===today});
+  }
+  const hasAny=days.some(d=>d.rec!=null);
+  if(!hasAny) return '<div class="vt-graph-empty">No history yet — data builds up day by day</div>';
+
+  const vals=days.filter(d=>d.rec!=null).map(d=>d.rec);
+  const avg=Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+  const W=280, H=56, pad=4;
+  const slotW=W/nDays;
+  const bars=days.map((d,i)=>{
+    const x=i*slotW+1; const bw=Math.max(1,slotW-2);
+    if(d.rec==null) return '<rect x="'+x.toFixed(1)+'" y="'+(H-2)+'" width="'+bw.toFixed(1)+'" height="2" rx="1" fill="rgba(255,255,255,.06)"/>';
+    const bh=Math.max(3,Math.round((d.rec/100)*(H-pad)));
+    const y=H-bh;
+    const op=d.isToday?1:0.72;
+    return '<rect x="'+x.toFixed(1)+'" y="'+y+'" width="'+bw.toFixed(1)+'" height="'+bh+'" rx="2" fill="'+d.tn.c+'" fill-opacity="'+op+'"'+(d.isToday?' stroke="rgba(255,255,255,.18)" stroke-width="1"':'')+'/>';
+  }).join('');
+
+  // x-axis labels: first, mid, last
+  const lblIdx=[0,Math.floor(nDays/2),nDays-1];
+  const lbls=lblIdx.map(i=>{
+    const x=(i*slotW+slotW/2).toFixed(1);
+    const lbl=days[i].d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return '<text x="'+x+'" y="'+(H+14)+'" text-anchor="middle" font-size="7" fill="rgba(255,255,255,.28)" font-family="monospace">'+lbl+'</text>';
+  }).join('');
+
+  return '<div class="vt-graph-avg">avg <b>'+avg+'</b></div>'
+    +'<svg viewBox="0 0 '+W+' '+(H+18)+'" width="100%" style="display:block;overflow:visible">'+bars+lbls+'</svg>';
+}
+
+function vitalCard(name,val,unit,sub,subCls){
+  return '<div class="vt-vital-card">'
+    +'<div class="vt-vital-name">'+name+'</div>'
+    +'<div><span class="vt-vital-val">'+val+'</span>'+(unit?'<span class="vt-vital-unit">'+unit+'</span>':'')+'</div>'
+    +(sub?'<div class="vt-vital-sub '+(subCls||'flat')+'">'+esc(sub)+'</div>':'')
+    +'</div>';
+}
+
 function viewRings(h){
   const rec=estRecovery(h); const sp=sleepPerfOf(h);
   const strain=h&&h.strain!=null?h.strain:null;
@@ -1589,7 +1668,9 @@ function viewRings(h){
   const cS=2*Math.PI*rS,cR=2*Math.PI*rR,cSt=2*Math.PI*rSt;
   const recDisp=rec!=null?Math.round(rec):'—';
   const recLbl=rec!=null?(rec>=80?'Prime':rec>=67?'Solid':rec>=45?'Moderate':'Low'):'No data';
+  const nt=toneOf(rec);
 
+  /* ── concentric rings (unchanged) ── */
   const rings='<div class="vt-rings-svg-wrap">'
     +'<svg class="vt-rings-svg" width="240" height="240" viewBox="0 0 240 240">'
     +'<circle class="vt-ring-track" cx="120" cy="120" r="'+rS+'" stroke-width="13"/>'
@@ -1619,10 +1700,59 @@ function viewRings(h){
     +'<div class="vt-stat-sub">'+esc(strainLabel(strain))+'</div>'
     +'<div class="vt-stat-lbl">STRAIN</div></div></div>';
 
+  /* ── recovery hero card ── */
+  const hb=hrvBaseline(); const rb=rhrBaseline();
+  const hrv=h&&h.hrv!=null?h.hrv:null;
+  const rhr=h&&h.rhr!=null?h.rhr:null;
+  const hrvSub=hrv&&hb?(hrv>hb?'↑ above baseline':'↓ below baseline'):hrv?'vs baseline n/a':'';
+  const rhrSub=rhr&&rb?'30-day avg '+Math.round(rb)+'bpm':rhr?'bpm':'';
+
+  const recCard='<div class="card vt-rec-card">'
+    +'<div class="vt-rec-left">'
+    +'<div class="vt-rec-score" style="color:'+nt.c+'">'+recDisp+'</div>'
+    +'<div class="vt-rec-badge"><span class="dot" style="background:'+nt.c+'"></span>'+esc(recLbl)+'</div>'
+    +'</div>'
+    +'<div class="vt-rec-right">'
+    +'<div class="vt-metric"><span class="vt-metric-lbl">Sleep quality</span><span class="vt-metric-val">'+(sp!=null?sp+'%':'—')+'</span></div>'
+    +'<div class="vt-metric"><span class="vt-metric-lbl">HRV</span><span class="vt-metric-val">'+(hrv!=null?hrv+'ms':'—')+'</span></div>'
+    +'<div class="vt-metric"><span class="vt-metric-lbl">Resting HR</span><span class="vt-metric-val">'+(rhr!=null?rhr+' bpm':'—')+'</span></div>'
+    +'<div class="vt-metric"><span class="vt-metric-lbl">SpO₂</span><span class="vt-metric-val">'+(h&&h.spo2!=null?h.spo2+'%':'—')+'</span></div>'
+    +'</div></div>';
+
+  /* ── trend graph ── */
+  const nDays=vitalsRange==='30d'?30:vitalsRange==='14d'?14:7;
+  const graphCard='<div class="card">'
+    +'<div class="vt-graph-head"><span class="vt-graph-title">Recovery trend</span>'
+    +'<div class="vt-range-seg">'
+    +['7d','14d','30d'].map(r=>'<button class="vt-range-btn'+(vitalsRange===r?' on':'')+'" data-vrange="'+r+'">'+r.toUpperCase()+'</button>').join('')
+    +'</div></div>'
+    +vitalsBarGraph(nDays)
+    +'</div>';
+
+  /* ── 4-up vitals ── */
+  const sleepVal=h&&typeof h.sleepHours==='number'?h.sleepHours:'—';
+  const sleepUnit=h&&typeof h.sleepHours==='number'?'h':'';
+  const sleepSub=sp!=null?sp+'% efficiency':'';
+  const hrvSubCls=hrv&&hb?(hrv>hb?'up':'down'):'flat';
+  const rhrSubCls=rhr&&rb?(rhr<rb?'up':'down'):'flat';
+
+  const vGrid='<div class="vt-vitals-grid">'
+    +vitalCard('Sleep',sleepVal,sleepUnit,sleepSub,'flat')
+    +vitalCard('HRV',hrv!=null?hrv:'—',hrv!=null?'ms':'',hrvSub,hrvSubCls)
+    +vitalCard('Resting HR',rhr!=null?rhr:'—',rhr!=null?'bpm':'',rhrSub,rhrSubCls)
+    +vitalCard('SpO₂',h&&h.spo2!=null?h.spo2:'—',h&&h.spo2!=null?'%':'',h&&h.spo2!=null?'Normal range':'','flat')
+    +'</div>';
+
   return eyebrow('01','RINGS &amp; SCORES')
     +'<div class="card" style="text-align:center;padding:18px 20px 22px">'
     +'<div class="vt-rings-wrap">'+rings+stats+'</div></div>'
-    +eyebrow('02','HOW YOU FEEL')
+    +eyebrow('02','RECOVERY')
+    +recCard
+    +eyebrow('03','TREND')
+    +graphCard
+    +eyebrow('04','VITALS')
+    +vGrid
+    +eyebrow('05','HOW YOU FEEL')
     +feelBarHtml();
 }
 
@@ -1917,6 +2047,7 @@ function startPulse(dur){
 }
 document.addEventListener('click',e=>{
   const vt=e.target.closest('[data-vtab]'); if(vt){ activeTab=vt.dataset.vtab; render(); return; }
+  const vr=e.target.closest('[data-vrange]'); if(vr){ vitalsRange=vr.dataset.vrange; render(); return; }
   if(e.target.closest('#mSave')){ saveManual(); return; }
   if(e.target.closest('[data-addsched]')){ const i=document.getElementById('schInput'); if(i)runSchedPrompt(i.value); return; }
   if(e.target.closest('[data-themeimport]')){ themeOpen=!themeOpen; render(); return; }
