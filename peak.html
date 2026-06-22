@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Liam" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <link rel="icon" type="image/svg+xml" href="icon.svg" />
-<title>Vitals · Liam</title>
+<title>Peak · Liam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opt@1,300;1,400;1,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -176,6 +176,120 @@ a{color:inherit;text-decoration:none;}
 .cafChip.suppOn{ background:linear-gradient(120deg,var(--accent),var(--accent2)); border-color:transparent; }
 .cafChip.suppOn .cafChipName{ color:#04130c; }
 .todayEyebrow{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin:0 0 14px; }
+/* Peak-specific: top score, curve, chart, schedule */
+.topScore{ display:flex; align-items:center; gap:18px; padding:14px 20px; margin-bottom:22px; }
+.tsRing{ position:relative; width:72px; height:72px; display:grid; place-items:center; flex:none; }
+.tsRing svg{ position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; }
+.tsRing .tr{ fill:none; stroke:rgba(255,255,255,.06); stroke-width:5; }
+.tsRing .fl{ fill:none; stroke:var(--ringc,var(--accent)); stroke-width:5; stroke-linecap:round; transition:stroke-dashoffset 1s var(--ease); filter:drop-shadow(0 0 5px var(--ringc,var(--accent))) drop-shadow(0 0 12px var(--ringc,var(--accent))); }
+.tsRing .glow{ position:absolute; inset:9px; border-radius:50%; background:radial-gradient(closest-side, var(--ringc,var(--accent)), transparent 72%); opacity:.18; filter:blur(10px); }
+.tsNum{ position:relative; z-index:1; font-family:var(--serif); font-style:italic; font-weight:600; font-size:30px; line-height:1; color:var(--fg); }
+.tsMeta{ display:flex; flex-direction:column; gap:4px; }
+.tsWord{ font-family:var(--serif); font-style:italic; font-size:20px; line-height:1; color:var(--accent2); }
+.tsCap{ font-family:var(--mono); font-size:9px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted); }
+.whyLink{ font-family:var(--serif); font-style:italic; font-size:14px; color:var(--muted2); cursor:pointer; border:0; background:none; }
+.whyLink:hover{ color:var(--accent2); }
+.whyBox{ display:none; margin-top:6px; width:100%; }
+.whyBox.on{ display:block; }
+.whyRow{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); padding:7px 0; border-top:1px solid var(--line); }
+.whyRow b{ color:var(--fg); }
+.todayHead{ font-family:var(--serif); font-style:italic; font-weight:500; font-size:clamp(22px,3vw,30px); line-height:1.2; margin:0 0 10px; }
+.todaySub{ font-size:15px; color:var(--muted2); line-height:1.55; margin:0 0 20px; }
+.recRow{ display:flex; gap:13px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--line); }
+.recRow:first-of-type{ border-top:0; }
+.recDot{ width:7px; height:7px; border-radius:50%; background:var(--accent); margin-top:6px; flex-shrink:0; box-shadow:0 0 8px var(--accent); }
+.recRow.warn .recDot{ background:var(--warn); box-shadow:0 0 8px var(--warn); }
+.recTxt{ font-size:14.5px; line-height:1.5; color:var(--muted2); }
+.recTxt b{ color:var(--fg); font-weight:600; }
+.curveCard{ padding:26px 26px 18px; }
+.curveTop{ display:flex; align-items:center; gap:20px; margin-bottom:22px; flex-wrap:wrap; }
+.peakRing{ position:relative; width:84px; height:84px; flex-shrink:0; display:grid; place-items:center; }
+.peakRing svg{ position:absolute; inset:0; transform:rotate(-90deg); overflow:visible; }
+.peakRing .tr{ fill:none; stroke:rgba(255,255,255,.07); stroke-width:4; }
+.peakRing .fl{ fill:none; stroke:var(--accent); stroke-width:4; stroke-linecap:round; transition:stroke-dashoffset .4s var(--ease); filter:drop-shadow(0 0 5px var(--accent)); }
+.peakNum{ font-family:var(--serif); font-style:italic; font-weight:600; font-size:30px; color:var(--fg); position:relative; z-index:1; }
+.curveLabel{ flex:1; min-width:180px; }
+.curveTitleRow{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.curveWord{ font-family:var(--serif); font-style:italic; font-size:19px; color:var(--fg); }
+.curveAt{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.curveScrub{ font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); display:inline-flex; align-items:center; gap:6px; opacity:0; transition:opacity .2s; }
+.curveScrub.on{ opacity:1; }
+.curveScrub .d{ width:6px; height:6px; border-radius:50%; background:var(--accent); }
+.curveDesc{ font-size:13.5px; color:var(--muted); line-height:1.5; margin:8px 0 0; max-width:46ch; }
+.seg{ display:inline-flex; background:rgba(255,255,255,.03); border:1px solid var(--line); border-radius:var(--pill); padding:3px; gap:2px; margin-left:auto; }
+.segBtn{ appearance:none; background:transparent; border:0; cursor:pointer; color:var(--muted); font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; padding:7px 15px; border-radius:var(--pill); transition:all .2s; }
+.segBtn.on{ background:rgba(52,211,153,.14); color:var(--accent2); }
+.chartWrap{ position:relative; width:100%; }
+.chartSvg{ position:relative; z-index:1; width:100%; height:300px; display:block; overflow:visible; touch-action:none; }
+.chartBg{ position:absolute; inset:0; z-index:0; overflow:hidden; pointer-events:none; border-radius:var(--radius-sm); }
+.bgk-aurora{ background:radial-gradient(ellipse 60% 55% at 32% 60%, var(--c-soft), transparent 68%),radial-gradient(ellipse 50% 45% at 75% 38%, var(--c-soft), transparent 70%),linear-gradient(135deg,#0a120e 0%,#050806 100%); opacity:.6; }
+.bgk-grid{ background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size:26px 26px; }
+.bgk-dots{ background-image:radial-gradient(var(--c-soft) 1.1px, transparent 1.4px); background-size:18px 18px; opacity:.5; }
+.bgk-mountains svg{ position:absolute; left:0; right:0; bottom:0; width:100%; height:62%; display:block; opacity:.7; }
+.bgk-particles span{ position:absolute; width:2px; height:2px; border-radius:50%; background:var(--c); box-shadow:0 0 6px var(--c-glow); opacity:0; animation:gp-drift linear infinite; }
+@keyframes gp-drift{ 0%{ transform:translate3d(0,0,0); opacity:0; } 12%{ opacity:.8; } 88%{ opacity:.5; } 100%{ transform:translate3d(var(--dx,10px),var(--dy,-120px),0); opacity:0; } }
+.scrubLine{ position:absolute; top:0; bottom:30px; width:1px; background:rgba(255,255,255,.28); pointer-events:none; display:none; }
+.scrubDot{ position:absolute; width:14px; height:14px; border-radius:50%; background:var(--warn); box-shadow:0 0 14px var(--warn),0 0 0 4px rgba(251,191,36,.18); transform:translate(-50%,-50%); pointer-events:none; display:none; }
+.scrubTip{ position:absolute; transform:translate(-50%,-130%); background:var(--panel2); border:1px solid var(--line2); border-radius:10px; padding:8px 12px; pointer-events:none; display:none; white-space:nowrap; backdrop-filter:blur(8px); }
+.scrubTip .v{ font-family:var(--serif); font-style:italic; font-size:18px; color:var(--accent); }
+.scrubTip .l{ font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-top:1px; }
+.dragTime{ position:absolute; bottom:34px; transform:translateX(-50%); display:none; background:var(--panel2); border:1px solid var(--accent2); border-radius:8px; padding:5px 11px; font-family:var(--mono); font-size:12px; font-weight:600; color:var(--accent2); white-space:nowrap; pointer-events:none; z-index:7; box-shadow:0 4px 14px rgba(0,0,0,.55); }
+.sleepHit{ position:absolute; top:0; bottom:30px; z-index:2; cursor:pointer; }
+.sleepHit:hover{ background:rgba(110,231,183,.05); }
+.sleepEditBtn{ position:absolute; top:50%; transform:translate(-50%,-50%); z-index:6; appearance:none; cursor:pointer; white-space:nowrap; font-family:var(--mono); font-size:10px; letter-spacing:.04em; color:var(--accent2); background:var(--panel2); border:1px solid var(--line2); border-radius:9px; padding:8px 12px; box-shadow:0 8px 22px rgba(0,0,0,.55); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.sleepEditBtn:hover{ border-color:var(--accent); background:rgba(110,231,183,.12); }
+.sleepEditPop{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:9; width:236px; background:var(--panel2); border:1px solid var(--line2); border-radius:14px; padding:16px 18px; box-shadow:0 20px 55px rgba(0,0,0,.7); -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px); }
+.sleepEditTitle{ font-family:var(--serif); font-style:italic; font-size:17px; margin-bottom:13px; }
+.sleepEditRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:11px; font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--muted2); }
+.sleepStep{ display:inline-flex; align-items:center; gap:0; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+.sleepStepB{ appearance:none; cursor:pointer; width:34px; height:34px; border:0; background:none; color:var(--accent2); font-size:20px; line-height:1; display:grid; place-items:center; }
+.sleepStepB:hover{ background:rgba(110,231,183,.14); color:var(--accent); }
+.sleepStepB:active{ background:rgba(110,231,183,.24); }
+.sleepStepV{ min-width:74px; text-align:center; font-family:var(--mono); font-size:13px; color:var(--fg); border-left:1px solid var(--line); border-right:1px solid var(--line); padding:8px 4px; }
+.sleepEditBtns{ display:flex; gap:8px; margin-top:6px; }
+.sleepEditCancel,.sleepEditSaveBtn{ flex:1; appearance:none; cursor:pointer; border-radius:8px; padding:9px; font-family:var(--mono); font-size:11px; letter-spacing:.04em; }
+.sleepEditCancel{ background:none; border:1px solid var(--line); color:var(--muted2); }
+.sleepEditCancel:hover{ color:var(--fg); border-color:var(--line2); }
+.sleepEditSaveBtn{ border:0; font-weight:600; color:#04130c; background:linear-gradient(120deg,var(--accent),var(--accent2)); }
+.nowline{ position:absolute; top:0; bottom:18px; width:1px; background:rgba(255,255,255,.4); pointer-events:none; z-index:4; }
+.nowdot{ position:absolute; width:13px; height:13px; border-radius:50%; background:#fff; border:2px solid var(--accent2); box-shadow:0 0 14px var(--accent2); transform:translate(-50%,-50%); pointer-events:none; z-index:5; }
+.nowbubble{ position:absolute; transform:translate(-50%,calc(-100% - 14px)); background:var(--panel2); border:1px solid var(--line2); border-radius:11px; padding:6px 11px; text-align:center; box-shadow:0 8px 22px rgba(0,0,0,.5); pointer-events:none; z-index:5; -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); }
+.nowbubble b{ display:block; font-family:var(--serif); font-style:italic; font-size:20px; line-height:1; color:var(--fg); }
+.nowbubble span{ font-family:var(--mono); font-size:9px; letter-spacing:.06em; color:var(--muted2); }
+.taskMark{ position:absolute; top:-9px; transform:translateX(-50%); display:inline-flex; align-items:center; gap:6px; font-family:var(--serif); font-style:italic; font-size:13px; color:var(--fg); white-space:nowrap; background:var(--panel2); border:1px solid var(--line); border-bottom:2px solid var(--dc); border-radius:8px; padding:3px 9px; max-width:150px; box-shadow:0 6px 18px -10px rgba(0,0,0,.9); pointer-events:auto; cursor:grab; touch-action:none; transition:left .12s var(--ease); }
+.taskMark.dragging{ cursor:grabbing; transition:none; z-index:5; box-shadow:0 0 0 1px var(--dc),0 8px 22px -8px rgba(0,0,0,.9); }
+.taskGrip{ font-family:var(--mono); font-style:normal; font-size:9px; color:var(--muted); }
+.schBands{ position:absolute; inset:0; pointer-events:none; z-index:3; }
+.schBand{ position:absolute; top:0; box-sizing:border-box; transition:left .12s var(--ease), width .12s var(--ease); }
+.schBand.bd{ border-left:1px solid var(--bc,rgba(255,255,255,.25)); border-right:1px solid var(--bc,rgba(255,255,255,.25)); }
+.schPill{ position:absolute; transform:translateX(-50%); display:inline-flex; align-items:center; gap:7px; white-space:nowrap; pointer-events:auto; cursor:grab; touch-action:none; transition:left .12s var(--ease); z-index:4; max-width:160px; }
+.schPill.top{ top:10px; } .schPill.bottom{ bottom:calc(6% + 8px); } .schPill.mid{ top:46%; transform:translate(-50%,-50%); }
+.schPill .pillNm{ font-family:var(--serif); font-style:italic; font-size:14px; color:var(--fg); overflow:hidden; text-overflow:ellipsis; max-width:96px; }
+.schPill .pillDur{ font-family:var(--mono); font-size:9px; opacity:.6; }
+.schPill .pillNo{ display:inline-grid; place-items:center; min-width:15px; height:15px; padding:0 3px; border-radius:7px; font-family:var(--mono); font-size:9px; font-weight:700; color:#fff; background:rgba(0,0,0,.5); flex:none; }
+.schPill .pillIc{ font-size:12px; opacity:.9; flex:none; }
+.schPill .pillTm{ font-family:var(--mono); font-size:9px; opacity:.72; letter-spacing:.01em; flex:none; }
+.schPill.glass{ background:rgba(255,255,255,.07); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.16); padding:5px 11px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,.35); }
+.schPill.solid{ background:var(--pc); padding:5px 11px; border-radius:10px; } .schPill.solid .pillNm{ color:#04140e; } .schPill.solid .pillDur{ color:#04140e; opacity:.7; }
+.schPill.outline{ background:rgba(0,0,0,.4); border:1px solid var(--pc); padding:5px 11px; border-radius:10px; } .schPill.outline .pillNm{ color:var(--pc); }
+.schPill.minimal{ padding:2px; } .schPill.minimal .pillNm{ color:var(--pc); text-shadow:0 0 10px var(--pc); }
+.schPill.dragging{ cursor:grabbing; transition:none; z-index:6; }
+.schLock{ position:absolute; transform:translateX(-50%); z-index:5; pointer-events:auto; cursor:pointer; width:22px; height:21px; display:grid; place-items:center; font-size:10px; background:rgba(4,6,5,.7); border:1px solid var(--line); border-radius:7px; transition:border-color .15s, transform .12s; }
+.schLock:hover{ transform:translateX(-50%) scale(1.12); }
+.schLock.on{ border-color:rgba(255,255,255,.32); }
+.schLock:not(.on){ border-color:rgba(110,231,183,.55); box-shadow:0 0 10px -3px var(--accent); }
+.crashMarks{ position:absolute; left:0; right:0; bottom:34px; height:0; pointer-events:none; }
+.crashMark{ position:absolute; transform:translateX(-50%); font-family:var(--mono); font-size:9px; letter-spacing:.04em; color:#fca5a5; white-space:nowrap; background:var(--panel2); border:1px solid rgba(239,68,68,.45); border-radius:7px; padding:3px 8px; }
+.sleepPlan{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 15px; margin-bottom:16px; border:1px solid var(--line); border-radius:var(--radius-sm); background:rgba(255,255,255,.02); }
+.spItem{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); }
+.spItem b{ color:var(--fg); font-family:var(--serif); font-style:italic; font-size:16px; text-transform:none; letter-spacing:0; margin-left:3px; }
+.spDot{ color:var(--muted); }
+.spNote{ font-family:var(--mono); font-size:9px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); margin-left:auto; }
+.xAxis{ display:flex; justify-content:space-between; margin-top:8px; padding:0 2px; }
+.xAxis span{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:var(--muted); }
+.plan{ margin-top:26px; }
+.planLabel{ font-family:var(--mono); font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted2); margin:0 0 12px; }
+.planEmpty{ border:1px dashed var(--line2); border-radius:var(--radius-sm); padding:18px; text-align:center; font-family:var(--mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 
 /* modal */
 .overlay{ position:fixed; inset:0; background:rgba(2,6,4,.72); backdrop-filter:blur(6px); z-index:50; display:flex; align-items:center; justify-content:center; padding:20px; }
@@ -1498,7 +1612,7 @@ let whyOpen=false;
 let infoOpen=false;
 let titleRevealed=false;
 let selectedSrc='fitbit';
-let activeTab='rings';
+let activeTab='today';
 function infoCardHtml(){
   const days=feelDays();
   return '<div class="infoCard"><span class="infoTag">Estimate · learns over 30 days</span>'
@@ -1530,8 +1644,8 @@ function deriveBed(wakeTime,hours){ if(!wakeTime||hours==null)return null; const
 function vtHeaderHTML(){
   return '<header class="header"><div class="headerLeft">'
     +'<a class="back" href="index.html"><span class="backArrow">&#8592;</span> Dashboard</a>'
-    +'<h1 class="title">Vitals</h1>'
-    +'<p class="subtitle">sleep &middot; recovery &middot; HRV &middot; strain</p>'
+    +'<h1 class="title">Peak</h1>'
+    +'<p class="subtitle">energy &middot; schedule &middot; log</p>'
     +'</div></header>';
 }
 function vtTickerHTML(){
@@ -1540,173 +1654,76 @@ function vtTickerHTML(){
   return '<div class="ticker"><div class="tkLive"><span class="d"></span>Live</div><div class="tkScroll"><div class="tkTrack">'+inner+inner+'</div></div></div>';
 }
 function vtTabBarHTML(){
-  const tabs=[['rings','rings'],['sleep','sleep'],['hrv','hrv'],['trends','trends']];
+  const tabs=[['today','today'],['curve','curve'],['log','log']];
   return '<nav class="tabBar"><div class="tabBarInner">'+tabs.map(([k,lbl])=>'<button class="tab'+(k===activeTab?' active':'')+'" data-vtab="'+k+'">'+lbl+'</button>').join('')+'</div></nav>';
 }
 function eyebrow(num,lbl){
   return '<div class="vt-eyebrow"><span class="vt-eyebrow-num">&middot;'+num+'</span><span class="vt-eyebrow-lbl">'+lbl+'</span><div class="vt-eyebrow-rule"></div></div>';
 }
-function strainColor(s){
-  if(s==null)return '#6EE7B7';
-  if(s<10)return '#6EE7B7';
-  if(s<14)return '#F59E0B';
-  if(s<18)return '#F97316';
-  return '#EF4444';
-}
-function strainClass(s){
-  if(s==null)return 'strain-light';
-  if(s<10)return 'strain-light';
-  if(s<14)return 'strain-mod';
-  return 'strain-hard';
-}
-function strainLabel(s){
-  if(s==null)return 'No data';
-  if(s<10)return 'Light';
-  if(s<14)return 'Moderate';
-  if(s<18)return 'Hard';
-  return 'All out';
-}
-function animateRings(h){
-  const rec=estRecovery(h)||0;
-  const sp=sleepPerfOf(h)||0;
-  const strain=h&&h.strain!=null?Math.min(1,h.strain/21):0;
-  const [rS,rR,rSt]=[100,78,56];
-  const [cS,cR,cSt]=[2*Math.PI*rS,2*Math.PI*rR,2*Math.PI*rSt];
-  requestAnimationFrame(()=>{
-    const sEl=document.getElementById('vt-ring-s');
-    const rEl=document.getElementById('vt-ring-r');
-    const stEl=document.getElementById('vt-ring-st');
-    if(sEl) sEl.style.strokeDashoffset=cS*(1-sp/100);
-    if(rEl) rEl.style.strokeDashoffset=cR*(1-rec/100);
-    if(stEl) stEl.style.strokeDashoffset=cSt*(1-strain);
-  });
-}
-function viewRings(h){
-  const rec=estRecovery(h); const sp=sleepPerfOf(h);
-  const strain=h&&h.strain!=null?h.strain:null;
-  const sc=strainColor(strain); const sClass=strainClass(strain);
-  const rS=100,rR=78,rSt=56;
-  const cS=2*Math.PI*rS,cR=2*Math.PI*rR,cSt=2*Math.PI*rSt;
-  const recDisp=rec!=null?Math.round(rec):'—';
-  const recLbl=rec!=null?(rec>=80?'Prime':rec>=67?'Solid':rec>=45?'Moderate':'Low'):'No data';
 
-  const rings='<div class="vt-rings-svg-wrap">'
-    +'<svg class="vt-rings-svg" width="240" height="240" viewBox="0 0 240 240">'
-    +'<circle class="vt-ring-track" cx="120" cy="120" r="'+rS+'" stroke-width="13"/>'
-    +'<circle class="vt-ring-track" cx="120" cy="120" r="'+rR+'" stroke-width="12"/>'
-    +'<circle class="vt-ring-track" cx="120" cy="120" r="'+rSt+'" stroke-width="11"/>'
-    +'<circle id="vt-ring-s" class="vt-ring-fill sleep" cx="120" cy="120" r="'+rS+'" stroke="#6EE7B7" stroke-width="13" stroke-dasharray="'+cS+'" stroke-dashoffset="'+cS+'"/>'
-    +'<circle id="vt-ring-r" class="vt-ring-fill rec" cx="120" cy="120" r="'+rR+'" stroke="#34D399" stroke-width="12" stroke-dasharray="'+cR+'" stroke-dashoffset="'+cR+'"/>'
-    +'<circle id="vt-ring-st" class="vt-ring-fill '+sClass+'" cx="120" cy="120" r="'+rSt+'" stroke="'+sc+'" stroke-width="11" stroke-dasharray="'+cSt+'" stroke-dashoffset="'+cSt+'"/>'
-    +'</svg>'
-    +'<div class="vt-rings-center">'
-    +'<div class="vt-ring-score">'+recDisp+'</div>'
-    +'<div class="vt-ring-label">RECOVERY</div>'
-    +'<div class="vt-ring-sub">'+esc(recLbl)+'</div>'
-    +'</div></div>';
+/* ── TODAY tab ─────────────────────────────────────────────── */
+function viewToday(h){
+  const nowE=Math.round(energyAt(nowT()).e); const nt=toneOf(nowE); const c1=2*Math.PI*30;
+  const topScore='<div class="card topScore"><div class="tsRing" style="--ringc:'+nt.c+'"><div class="glow"></div>'
+    +'<svg viewBox="0 0 72 72"><circle class="tr" cx="36" cy="36" r="30"/>'
+    +'<circle class="fl" cx="36" cy="36" r="30" style="stroke-dasharray:'+c1+';stroke-dashoffset:'+(c1*(1-nowE/100))+'"/></svg>'
+    +'<div class="tsNum">'+nowE+'</div></div>'
+    +'<div class="tsMeta"><div class="tsWord">'+nt.word+'</div><div class="tsCap">Peak now &middot; '+clockOf(nowT())+'</div></div></div>';
 
-  const stats='<div class="vt-stats">'
-    +'<div class="vt-stat"><div class="vt-stat-dot" style="background:#6EE7B7;box-shadow:0 0 8px rgba(110,231,183,.5)"></div>'
-    +'<div class="vt-stat-val">'+(h&&typeof h.sleepHours==='number'?h.sleepHours:'—')+'</div>'
-    +'<div class="vt-stat-sub">'+(sp!=null?sp+'% quality':'—')+'</div>'
-    +'<div class="vt-stat-lbl">SLEEP</div></div>'
-    +'<div class="vt-stat"><div class="vt-stat-dot" style="background:#34D399;box-shadow:0 0 8px rgba(52,211,153,.5)"></div>'
-    +'<div class="vt-stat-val">'+(rec!=null?Math.round(rec)+'%':'—')+'</div>'
-    +'<div class="vt-stat-sub">'+(h&&h.hrv!=null?h.hrv+'ms HRV':'computed')+'</div>'
-    +'<div class="vt-stat-lbl">RECOVERY</div></div>'
-    +'<div class="vt-stat"><div class="vt-stat-dot" style="background:'+sc+';box-shadow:0 0 8px '+sc+'44"></div>'
-    +'<div class="vt-stat-val">'+(strain!=null?strain.toFixed(1):'—')+'</div>'
-    +'<div class="vt-stat-sub">'+esc(strainLabel(strain))+'</div>'
-    +'<div class="vt-stat-lbl">STRAIN</div></div></div>';
-
-  return eyebrow('01','RINGS &amp; SCORES')
-    +'<div class="card" style="text-align:center;padding:18px 20px 22px">'
-    +'<div class="vt-rings-wrap">'+rings+stats+'</div></div>'
-    +eyebrow('02','HOW YOU FEEL')
-    +feelBarHtml()
-    +eyebrow('03','CAFFEINE')
-    +caffeineCardHtml();
-}
-
-function viewSleep(h){
-  const sp=sleepPerfOf(h);
-  const debt=sleepDebt();
-  const wb=wakeBed();
-  const hrs=h&&typeof h.sleepHours==='number'?h.sleepHours:null;
-  const heroCard='<div class="card">'
-    +'<div class="vt-sleep-hero">'
-    +'<div class="vt-sleep-hrs">'+(hrs!=null?hrs:'—')+'<span>h</span></div>'
-    +'<div class="vt-sleep-meta">'
-    +(sp!=null?'<div class="vt-sleep-quality">'+sp+'% quality</div>':'')
-    +(h&&h.wakeTime?'<div class="vt-sleep-times">Wake '+clockOf(parseHM(h.wakeTime))+' &middot; Bed '+clockOf(wb.bed)+'</div>':'')
-    +(debt>0.5?'<div class="vt-debt-badge">⚠ '+Math.round(debt*10)/10+'h debt (5-day)</div>':'')
-    +'</div></div></div>';
-
-  const mCard=manualCard(h);
-
-  return eyebrow('01','SLEEP')+heroCard
-    +eyebrow('02','DAILY CHECK-IN')+mCard
-    +eyebrow('03','MEDS &amp; SUBSTANCES')+medCardHtml();
-}
-
-function viewHrv(h){
-  const hrv=h&&typeof h.hrv==='number'?h.hrv:null;
-  const rhr=h&&typeof h.rhr==='number'?h.rhr:null;
-  const rec=estRecovery(h);
-  const hb=hrvBaseline(), rb=rhrBaseline();
-  const hrvDelta=hrv&&hb?hrv-hb:null;
-  const rhrDelta=rhr&&rb?rhr-rb:null;
-
-  function statCard(lbl,val,unit,delta,deltaGoodIfPositive){
-    const dc=delta==null?'flat':((delta>0)===deltaGoodIfPositive?'up':'down');
-    const dd=delta!=null?(delta>0?'+':'')+Math.round(delta)+(unit==='ms'?'ms':'bpm'):null;
-    return '<div class="vt-hrv-card">'
-      +'<div class="vt-hrv-lbl">'+lbl+'</div>'
-      +'<div class="vt-hrv-val">'+(val!=null?Math.round(val):'—')+'<span class="vt-hrv-unit">'+unit+'</span></div>'
-      +(dd?'<div class="vt-hrv-delta '+dc+'">'+(dc==='up'?'↑':'↓')+' '+esc(dd)+' vs 30d avg</div>':'')
-      +'</div>';
-  }
-
-  const grid='<div class="card"><div class="vt-hrv-grid">'
-    +statCard('HRV',hrv,'ms',hrvDelta,true)
-    +statCard('RESTING HR',rhr,'bpm',rhrDelta,false)
-    +statCard('RECOVERY',rec,'%',null,true)
-    +'<div class="vt-hrv-card"><div class="vt-hrv-lbl">STRAIN</div>'
-    +'<div class="vt-hrv-val">'+(h&&h.strain!=null?h.strain.toFixed(1):'—')+'<span class="vt-hrv-unit">/ 21</span></div>'
-    +'<div class="vt-hrv-delta flat">'+esc(strainLabel(h&&h.strain!=null?h.strain:null))+'</div>'
-    +'</div>'
-    +'</div>'
-    +(hb||rb?'<div class="vt-hrv-why" style="margin-top:14px;border-top:1px solid var(--line);padding-top:14px">'
-      +(hb?'Your HRV baseline: <b>'+Math.round(hb)+'ms</b>. ':''  )
-      +(rb?'RHR baseline: <b>'+Math.round(rb)+'bpm</b>. ':'')
-      +'Baselines update from your last 30 days of data.</div>':'')
+  const recs=recommendations();
+  const todayCard='<div class="card"><p class="todayEyebrow">Today</p>'
+    +'<h2 class="todayHead">'+nowStatus()+'</h2>'
+    +'<p class="todaySub">Best hour today is <b style="color:var(--accent2)">'+clockOf(PEAK.t)+'</b> — block it for what matters most.</p>'
+    +recs.map(r=>'<div class="recRow'+(r[0]?' warn':'')+'"><span class="recDot"></span><span class="recTxt"><b>'+esc(r[1])+'</b> '+esc(r[2])+'</span></div>').join('')
     +'</div>';
 
-  return eyebrow('01','HRV &amp; HEART')+grid
-    +eyebrow('02','WATER')+waterCardHtml()
-    +eyebrow('03','SUPPLEMENTS')+suppCardHtml();
+  return eyebrow('01','PEAK NOW')+topScore
+    +eyebrow('02','TODAY')+todayCard
+    +eyebrow('03','HOW YOU FEEL')+feelBarHtml();
 }
 
-function viewTrends(){
-  const log=loadLog(); const today=dayKey();
-  let cards=''; const days=[];
-  for(let i=6;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); days.push(d); }
-  cards=days.map(d=>{
-    const k=dayKey(d); const isToday=(k===today);
-    const wk=isToday?'TODAY':d.toLocaleDateString('en-US',{weekday:'short'}).toUpperCase();
-    const entry=log.days[k]; const rec=entry&&entry.readiness!=null?entry.readiness:null;
-    const tn=toneOf(rec); const pct=rec!=null?rec:0;
-    return '<div class="vt-trend-day'+(isToday?' today':'')+'">'
-      +'<div class="vt-trend-wk">'+wk+'</div>'
-      +'<div class="vt-trend-num">'+d.getDate()+'</div>'
-      +'<div class="vt-trend-bar"><div class="vt-trend-fill" style="height:'+pct+'%;background:'+tn.c+'"></div></div>'
-      +(rec!=null?'<div class="vt-trend-score" style="color:'+tn.c+'">'+Math.round(rec)+'</div>':'<div class="vt-trend-score" style="color:var(--muted)">—</div>')
-      +'</div>';
-  }).join('');
+/* ── CURVE tab ─────────────────────────────────────────────── */
+function viewCurve(){
+  const c2=2*Math.PI*38;
+  const sp=planSleep();
+  const sleepPlan=hasWakeBedData()
+    ?'<div class="sleepPlan"><span class="spItem">🌙 Bed <b>'+clockOf(sp.bed)+'</b></span><span class="spDot">·</span><span class="spItem">☀️ Wake <b>'+clockOf(sp.wake)+'</b></span><span class="spNote"><b data-countdown="'+bedCountdownMs()+'" style="color:var(--accent2)"></b> to bed</span></div>'
+    :'<div class="sleepPlan"><span class="spItem" style="color:var(--muted)">⏳ No sleep data yet</span></div>';
 
-  return eyebrow('01','THIS WEEK')
-    +'<div class="card"><div class="vt-trend-row">'+cards+'</div></div>'
-    +eyebrow('02','CAFFEINE')+caffeineCardHtml();
+  const cc=caffeineCrash(), mc=medCrash();
+  let crashLabels='';
+  if(cc) crashLabels+='<div class="crashMark" style="left:'+clamp(cc.t/24*100,6,94)+'%">☕ crash '+clockOf(cc.t)+'</div>';
+  if(mc&&(!cc||Math.abs(mc.t-cc.t)>0.3)) crashLabels+='<div class="crashMark" style="left:'+clamp(mc.t/24*100,6,94)+'%">💊 comedown '+clockOf(mc.t)+'</div>';
+
+  const peakRing='<div class="peakRing"><svg viewBox="0 0 84 84"><circle class="tr" cx="42" cy="42" r="38"/>'
+    +'<circle class="fl" cx="42" cy="42" r="38" style="stroke-dasharray:'+c2+';stroke-dashoffset:'+(c2*(1-PEAK.e/100))+'"/></svg>'
+    +'<div class="peakNum">'+Math.round(PEAK.e)+'</div></div>';
+
+  const curveCard='<div class="card curveCard">'+sleepPlan
+    +'<div class="curveTop">'+peakRing
+    +'<div class="curveLabel"><div class="curveTitleRow"><span class="curveWord" id="curveWord">Peak</span><span class="curveAt" id="curveAt">at '+clockOf(PEAK.t)+'</span><span class="curveScrub" id="curveScrub"><span class="d"></span>Scrubbing</span></div>'
+    +'<p class="curveDesc">'+curveStatusHtml()+'</p></div>'
+    +'<div class="seg">'+['line','bars','stack'].map(t=>'<button class="segBtn'+(chartType===t?' on':'')+'" data-chart="'+t+'">'+t+'</button>').join('')+'</div></div>'
+    +'<div class="chartWrap" id="chartWrap">'+chartBackdropHtml()+chartSvg()
+    +'<div class="schBands" id="schBands">'+schOverlayHtml()+'</div>'
+    +'<div class="crashMarks">'+crashLabels+'</div>'
+    +'<div class="scrubLine" id="scrubLine"></div><div class="scrubDot" id="scrubDot"></div>'
+    +'<div class="scrubTip" id="scrubTip"><div class="v"></div><div class="l"></div></div>'
+    +'<div class="dragTime" id="dragTime"></div></div>'
+    +'<div class="xAxis">'+X_LABELS.map(l=>'<span>'+l+'</span>').join('')+'</div>'
+    +'<div class="plan">'+planLaneHtml()+'</div>'
+    +'</div>';
+
+  return eyebrow('01','ENERGY CURVE')+curveCard
+    +eyebrow('02','SCHEDULE')+scheduleHtml();
+}
+
+/* ── LOG tab ───────────────────────────────────────────────── */
+function viewLog(){
+  return eyebrow('01','CAFFEINE')+caffeineCardHtml()
+    +eyebrow('02','MEDS &amp; SUBSTANCES')+medCardHtml()
+    +eyebrow('03','WATER')+waterCardHtml()
+    +eyebrow('04','SUPPLEMENTS')+suppCardHtml();
 }
 
 function render(){
@@ -1716,20 +1733,17 @@ function render(){
   if(draft==null){ loadDraft(dayKey()); prefillSchedule(); }
 
   let view='';
-  if(activeTab==='rings') view=viewRings(h);
-  else if(activeTab==='sleep') view=viewSleep(h);
-  else if(activeTab==='hrv') view=viewHrv(h);
-  else if(activeTab==='trends') view=viewTrends();
+  if(activeTab==='today') view=viewToday(h);
+  else if(activeTab==='curve') view=viewCurve();
+  else if(activeTab==='log') view=viewLog();
 
   const app=document.getElementById('app');
   app.innerHTML='<div class="shell">'+vtHeaderHTML()+vtTickerHTML()+'<div class="tabView">'+view+'</div>'+vtTabBarHTML()+'</div>';
 
   bindFeel();
-  if(activeTab==='rings') bindCaf();
-  if(activeTab==='sleep'){ bindFeel(); bindSleepEdit(); }
-  if(activeTab==='trends') bindCaf();
+  if(activeTab==='curve'){ bindScrub(); bindSched(); bindTaskDrag(); bindSleepEdit(); layoutSchedPills(); }
+  if(activeTab==='log'){ bindCaf(); bindMed(); }
   tickCountdowns();
-  if(activeTab==='rings') animateRings(h);
 }
 function feelBarHtml(){
   const f=latestFeelToday(); const val=f!=null?f:Math.round(energyAt(nowT()).e);
@@ -1984,6 +1998,7 @@ document.addEventListener('click',e=>{
 })();
 
 applyThemeBg();
+(function(){ const h=location.hash.slice(1); if(['today','curve','log'].includes(h)) activeTab=h; })();
 render();
 // Auto-refresh Fitbit data on load and every 5 minutes if it's the active source
 (async function initFitbit(){
