@@ -1623,9 +1623,7 @@ function viewRings(h){
     +'<div class="card" style="text-align:center;padding:18px 20px 22px">'
     +'<div class="vt-rings-wrap">'+rings+stats+'</div></div>'
     +eyebrow('02','HOW YOU FEEL')
-    +feelBarHtml()
-    +eyebrow('03','CAFFEINE')
-    +caffeineCardHtml();
+    +feelBarHtml();
 }
 
 function viewSleep(h){
@@ -1725,7 +1723,6 @@ function render(){
   app.innerHTML='<div class="shell">'+vtHeaderHTML()+vtTickerHTML()+'<div class="tabView">'+view+'</div>'+vtTabBarHTML()+'</div>';
 
   bindFeel();
-  if(activeTab==='rings') bindCaf();
   if(activeTab==='sleep'){ bindFeel(); bindSleepEdit(); }
   if(activeTab==='trends') bindCaf();
   tickCountdowns();
