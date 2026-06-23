@@ -1612,6 +1612,21 @@ function animateRings(h){
     if(stEl) stEl.style.strokeDashoffset=C*(1-strain);
   });
 }
+function trioRingHTML(id,cls,val,unit,lbl,sub,subCls){
+  const R=46,SW=9,C=2*Math.PI*R;
+  const inner=String(val)+(unit?'<span class="vt-trio-unit">'+unit+'</span>':'');
+  return '<div class="vt-trio-item">'
+    +'<div class="vt-trio-svg-wrap">'
+    +'<svg class="vt-trio-svg" viewBox="0 0 110 110">'
+    +'<circle class="vt-trio-track" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'"/>'
+    +'<circle id="'+id+'" class="vt-trio-fill '+cls+'" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'"/>'
+    +'</svg>'
+    +'<div class="vt-trio-center"><div class="vt-trio-val">'+inner+'</div></div>'
+    +'</div>'
+    +'<div class="vt-trio-lbl">'+lbl+'</div>'
+    +(sub?'<div class="vt-trio-sub '+subCls+'">'+esc(sub)+'</div>':'')
+    +'</div>';
+}
 function vitalsBarGraph(nDays){
   const log=loadLog(); const today=dayKey();
   const days=[];
@@ -1666,27 +1681,12 @@ function viewRings(h){
   const nt=toneOf(rec);
 
   /* ── 3 separate Whoop-style rings ── */
-  const R=46, SW=9, C=2*Math.PI*R;
-  function ring(id,cls,val,unit,lbl,sub,subCls){
-    const inner=val+(unit?'<span class="vt-trio-unit">'+unit+'</span>':'');
-    return '<div class="vt-trio-item">'
-      +'<div class="vt-trio-svg-wrap">'
-      +'<svg class="vt-trio-svg" viewBox="0 0 110 110">'
-      +'<circle class="vt-trio-track" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'"/>'
-      +'<circle id="'+id+'" class="vt-trio-fill '+cls+'" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'"/>'
-      +'</svg>'
-      +'<div class="vt-trio-center"><div class="vt-trio-val">'+inner+'</div></div>'
-      +'</div>'
-      +'<div class="vt-trio-lbl">'+lbl+'</div>'
-      +(sub?'<div class="vt-trio-sub '+subCls+'">'+sub+'</div>':'')
-      +'</div>';
-  }
   const sleepPct=sp!=null?sp:'—';
   const sleepSub=h&&typeof h.sleepHours==='number'?h.sleepHours+'h sleep':'';
   const trio='<div class="vt-trio">'
-    +ring('vt-r-sleep','sleep', sleepPct, sp!=null?'%':'', 'SLEEP',    esc(sleepSub),'sleep')
-    +ring('vt-r-rec',  'rec',   recDisp,  rec!=null?'%':'','RECOVERY', esc(recLbl),  'rec')
-    +ring('vt-r-strain',sClass, strain!=null?strain.toFixed(1):'—','','STRAIN',esc(strainLabel(strain)),'strain')
+    +trioRingHTML('vt-r-sleep','sleep', sleepPct, sp!=null?'%':'',  'SLEEP',    sleepSub,           'sleep')
+    +trioRingHTML('vt-r-rec',  'rec',   recDisp,  rec!=null?'%':'', 'RECOVERY', recLbl,             'rec')
+    +trioRingHTML('vt-r-strain',sClass, strain!=null?strain.toFixed(1):'—','','STRAIN',strainLabel(strain),'strain')
     +'</div>';
 
   /* ── recovery hero card ── */
