@@ -1823,25 +1823,30 @@ function viewTrends(){
 }
 
 function render(){
-  clearCaches();
-  const h=health();
-  CURVE=buildCurve(); PEAK=peakOf(CURVE);
-  if(draft==null){ loadDraft(dayKey()); prefillSchedule(); }
+  try{
+    clearCaches();
+    const h=health();
+    CURVE=buildCurve(); PEAK=peakOf(CURVE);
+    if(draft==null){ loadDraft(dayKey()); prefillSchedule(); }
 
-  let view='';
-  if(activeTab==='rings') view=viewRings(h);
-  else if(activeTab==='sleep') view=viewSleep(h);
-  else if(activeTab==='hrv') view=viewHrv(h);
-  else if(activeTab==='trends') view=viewTrends();
+    let view='';
+    if(activeTab==='rings') view=viewRings(h);
+    else if(activeTab==='sleep') view=viewSleep(h);
+    else if(activeTab==='hrv') view=viewHrv(h);
+    else if(activeTab==='trends') view=viewTrends();
 
-  const app=document.getElementById('app');
-  app.innerHTML='<div class="shell">'+vtHeaderHTML()+vtTickerHTML()+'<div class="tabView">'+view+'</div>'+vtTabBarHTML()+'</div>';
+    const app=document.getElementById('app');
+    app.innerHTML='<div class="shell">'+vtHeaderHTML()+vtTickerHTML()+'<div class="tabView">'+view+'</div>'+vtTabBarHTML()+'</div>';
 
-  bindFeel();
-  if(activeTab==='sleep'){ bindFeel(); bindSleepEdit(); }
-  if(activeTab==='trends') bindCaf();
-  tickCountdowns();
-  if(activeTab==='rings') animateRings(h);
+    bindFeel();
+    if(activeTab==='sleep'){ bindFeel(); bindSleepEdit(); }
+    if(activeTab==='trends') bindCaf();
+    tickCountdowns();
+    if(activeTab==='rings') animateRings(h);
+  }catch(err){
+    const app=document.getElementById('app');
+    if(app) app.innerHTML='<div style="color:#f87171;font-family:monospace;padding:40px 20px;white-space:pre-wrap;position:relative;z-index:10">ERROR in render():\n'+err.message+'\n\n'+err.stack+'</div>';
+  }
 }
 function feelBarHtml(){
   const f=latestFeelToday(); const val=f!=null?f:Math.round(energyAt(nowT()).e);
