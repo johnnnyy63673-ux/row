@@ -116,7 +116,7 @@ a{color:inherit;text-decoration:none;}
 .vt-trio-fill.strain-hard{stroke:#EF4444;filter:drop-shadow(0 0 8px rgba(239,68,68,.5));}
 .vt-trio-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;}
 .vt-trio-val{font-family:var(--font-serif);font-style:italic;font-size:26px;font-weight:400;line-height:1;color:var(--fg);}
-.vt-trio-unit{font-family:var(--mono);font-size:9px;color:var(--muted);margin-top:1px;}
+.vt-trio-unit{font-family:var(--mono);font-size:13px;color:var(--muted);vertical-align:super;line-height:0;margin-left:1px;}
 .vt-trio-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);text-align:center;}
 .vt-trio-sub{font-family:var(--mono);font-size:8px;letter-spacing:.06em;text-transform:uppercase;text-align:center;margin-top:1px;}
 .vt-trio-sub.sleep{color:rgba(110,231,183,.7);}
@@ -1668,24 +1668,25 @@ function viewRings(h){
   /* ── 3 separate Whoop-style rings ── */
   const R=46, SW=9, C=2*Math.PI*R;
   function ring(id,cls,val,unit,lbl,sub,subCls){
+    const inner=val+(unit?'<span class="vt-trio-unit">'+unit+'</span>':'');
     return '<div class="vt-trio-item">'
       +'<div class="vt-trio-svg-wrap">'
       +'<svg class="vt-trio-svg" viewBox="0 0 110 110">'
       +'<circle class="vt-trio-track" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'"/>'
       +'<circle id="'+id+'" class="vt-trio-fill '+cls+'" cx="55" cy="55" r="'+R+'" stroke-width="'+SW+'" stroke-dasharray="'+C+'" stroke-dashoffset="'+C+'"/>'
       +'</svg>'
-      +'<div class="vt-trio-center"><div class="vt-trio-val">'+val+'</div>'+(unit?'<div class="vt-trio-unit">'+unit+'</div>':'')+'</div>'
+      +'<div class="vt-trio-center"><div class="vt-trio-val">'+inner+'</div></div>'
       +'</div>'
       +'<div class="vt-trio-lbl">'+lbl+'</div>'
       +(sub?'<div class="vt-trio-sub '+subCls+'">'+sub+'</div>':'')
       +'</div>';
   }
-  const sleepVal=h&&typeof h.sleepHours==='number'?h.sleepHours+'h':'—';
-  const sleepSub=sp!=null?sp+'% quality':'';
+  const sleepPct=sp!=null?sp:'—';
+  const sleepSub=h&&typeof h.sleepHours==='number'?h.sleepHours+'h sleep':'';
   const trio='<div class="vt-trio">'
-    +ring('vt-r-sleep','sleep', sleepVal,'',    'SLEEP',    esc(sleepSub),'sleep')
-    +ring('vt-r-rec',  'rec',   recDisp, '%',   'RECOVERY', esc(recLbl),  'rec')
-    +ring('vt-r-strain',sClass, strain!=null?strain.toFixed(1):'—','/21','STRAIN',esc(strainLabel(strain)),'strain')
+    +ring('vt-r-sleep','sleep', sleepPct, sp!=null?'%':'', 'SLEEP',    esc(sleepSub),'sleep')
+    +ring('vt-r-rec',  'rec',   recDisp,  rec!=null?'%':'','RECOVERY', esc(recLbl),  'rec')
+    +ring('vt-r-strain',sClass, strain!=null?strain.toFixed(1):'—','','STRAIN',esc(strainLabel(strain)),'strain')
     +'</div>';
 
   /* ── recovery hero card ── */
