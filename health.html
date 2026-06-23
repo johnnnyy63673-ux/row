@@ -1718,14 +1718,11 @@ function viewRings(h){
     +'</div>';
 
   /* ── 4-up vitals ── */
-  const sleepVal=h&&typeof h.sleepHours==='number'?h.sleepHours:'—';
-  const sleepUnit=h&&typeof h.sleepHours==='number'?'h':'';
-  const sleepSub=sp!=null?sp+'% efficiency':'';
   const hrvSubCls=hrv&&hb?(hrv>hb?'up':'down'):'flat';
   const rhrSubCls=rhr&&rb?(rhr<rb?'up':'down'):'flat';
 
   const vGrid='<div class="vt-vitals-grid">'
-    +vitalCard('Sleep',sleepVal,sleepUnit,sleepSub,'flat')
+    +vitalCard('Sleep',sleepVal,'',sleepSub,'flat')
     +vitalCard('HRV',hrv!=null?hrv:'—',hrv!=null?'ms':'',hrvSub,hrvSubCls)
     +vitalCard('Resting HR',rhr!=null?rhr:'—',rhr!=null?'bpm':'',rhrSub,rhrSubCls)
     +vitalCard('SpO₂',h&&h.spo2!=null?h.spo2:'—',h&&h.spo2!=null?'%':'',h&&h.spo2!=null?'Normal range':'','flat')
