@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#000000">
+<title>Vitality · Design Lab</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+ * Design tokens — copied verbatim from design-kit/tokens/tokens.css
+ * ============================================================ */
+:root {
+  --bg: #000000;
+  --bg-elevated: #0a0a0a;
+  --fg: #ffffff;
+
+  --accent: #6EE7B7;            /* signature mint */
+  --accent-hover: #5dd6a6;
+  --accent-deep: #1f4d3d;
+  --accent-glow: rgba(110, 231, 183, 0.4);
+
+  --amber: #F59E0B;
+  --amber-warm: #d97706;
+  --wine: #7c2d12;
+  --red: #EF4444;
+
+  --muted: rgba(255, 255, 255, 0.5);
+  --muted-strong: rgba(255, 255, 255, 0.7);
+
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+
+  --card: rgba(255, 255, 255, 0.02);
+  --card-elevated: rgba(255, 255, 255, 0.04);
+
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem;
+  --space-5: 1.25rem; --space-6: 1.5rem; --space-8: 2rem; --space-10: 2.5rem;
+  --space-12: 3rem; --space-16: 4rem;
+
+  --radius-sm: 6px; --radius-md: 8px; --radius-lg: 12px; --radius-pill: 999px;
+
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem; --text-lg: 1.125rem;
+  --text-xl: 1.375rem; --text-2xl: 1.75rem; --text-3xl: 2.5rem;
+
+  /* The lab supplies the three faces here. Toggle the serif live (button up top). */
+  --font-inter: 'Inter';
+  --font-newsreader: 'Newsreader';     /* kit-canonical serif */
+  --font-instrument: 'Instrument Serif';/* the serif most standalone pages use */
+  --font-jetbrains: 'JetBrains Mono';
+
+  --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-serif: var(--font-newsreader), 'Times New Roman', Georgia, serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-out-soft: cubic-bezier(0.32, 0.72, 0, 1);
+  --duration-fast: 120ms; --duration: 180ms; --duration-lift: 480ms;
+}
+
+/* ============================================================
+ * Component styles — copied verbatim from design-kit/components/styles.css
+ * ============================================================ */
+.dk-btn { display:inline-flex; align-items:center; justify-content:center; gap:var(--space-2);
+  padding:0.6875rem var(--space-4); border:1px solid transparent; border-radius:var(--radius-md);
+  font-family:var(--font-sans); font-size:var(--text-sm); font-weight:600; line-height:1;
+  white-space:nowrap; cursor:pointer;
+  transition:background var(--duration) var(--ease), border-color var(--duration) var(--ease),
+    color var(--duration) var(--ease), transform var(--duration-fast) var(--ease); }
+.dk-btn:disabled { opacity:0.5; cursor:not-allowed; }
+.dk-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+.dk-btn--block { width:100%; }
+.dk-btn--primary { background:var(--accent); color:#000; }
+.dk-btn--primary:hover:not(:disabled) { background:var(--accent-hover); }
+.dk-btn--primary:active:not(:disabled) { transform:translateY(1px); }
+.dk-btn--ghost { background:transparent; color:var(--fg); border-color:var(--border); }
+.dk-btn--ghost:hover:not(:disabled) { border-color:var(--border-strong); background:var(--card); }
+.dk-btn--pill { background:var(--card); color:var(--accent); border:1px solid var(--border-strong);
+  border-radius:var(--radius-pill); font-family:var(--font-mono); font-size:var(--text-xs);
+  letter-spacing:0.12em; text-transform:uppercase; padding:0.5rem var(--space-4); }
+.dk-btn--pill:hover:not(:disabled) { border-color:var(--accent); background:var(--card-elevated); }
+.dk-btn--link { background:transparent; color:var(--muted-strong); padding:var(--space-2) var(--space-3); font-weight:500; }
+.dk-btn--link:hover:not(:disabled) { color:var(--fg); }
+
+.dk-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius-lg);
+  padding:var(--space-6); transition:border-color var(--duration) var(--ease); }
+.dk-card--elevated { background:var(--card-elevated); }
+.dk-card--interactive { cursor:pointer; }
+.dk-card--interactive:hover { border-color:rgba(110,231,183,0.35); box-shadow:0 0 40px rgba(110,231,183,0.08); }
+.dk-card__header { margin-bottom:var(--space-4); }
+.dk-card__title { font-family:var(--font-serif); font-style:italic; font-size:var(--text-xl); letter-spacing:-0.015em; }
+.dk-card__eyebrow { font-family:var(--font-mono); font-size:var(--text-xs); letter-spacing:0.18em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:var(--space-2); }
+
+.dk-field { display:flex; flex-direction:column; gap:var(--space-2); }
+.dk-field__label { font-family:var(--font-sans); font-size:var(--text-xs); font-weight:500;
+  color:var(--muted-strong); letter-spacing:0.02em; text-transform:uppercase; }
+.dk-input, .dk-textarea { background:var(--card); border:1px solid var(--border); color:var(--fg);
+  font-family:var(--font-sans); font-size:var(--text-sm); padding:0.6875rem var(--space-3);
+  border-radius:var(--radius-sm); outline:none; width:100%;
+  transition:border-color var(--duration) var(--ease), background var(--duration) var(--ease); }
+.dk-textarea { resize:vertical; min-height:88px; line-height:1.5; }
+.dk-input::placeholder, .dk-textarea::placeholder { color:var(--muted); }
+.dk-input:hover, .dk-textarea:hover { border-color:var(--border-strong); }
+.dk-input:focus, .dk-textarea:focus { border-color:var(--accent); background:rgba(110,231,183,0.04); }
+.dk-field__error { color:var(--red); font-size:var(--text-sm); }
+
+.dk-badge { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-mono);
+  font-size:var(--text-xs); letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px;
+  border-radius:var(--radius-pill); border:1px solid transparent; }
+.dk-badge__dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+.dk-badge--accent { color:var(--accent); background:rgba(110,231,183,0.1); border-color:rgba(110,231,183,0.28); }
+.dk-badge--amber { color:var(--amber); background:rgba(245,158,11,0.1); border-color:rgba(245,158,11,0.28); }
+.dk-badge--red { color:var(--red); background:rgba(239,68,68,0.1); border-color:rgba(239,68,68,0.28); }
+.dk-badge--neutral { color:var(--muted-strong); background:rgba(255,255,255,0.04); border-color:var(--border); }
+
+.dk-ring { position:relative; display:inline-flex; }
+.dk-ring svg { transform:rotate(-90deg); overflow:visible; }
+.dk-ring__track { stroke:rgba(255,255,255,0.08); }
+.dk-ring__fill { stroke:var(--accent); filter:drop-shadow(0 0 10px var(--accent-glow));
+  transition:stroke-dashoffset var(--duration-lift) var(--ease-premium); }
+.dk-ring__center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.dk-ring__num { font-family:var(--font-serif); font-style:italic; font-weight:500; color:var(--accent); line-height:1; }
+.dk-ring__label { font-family:var(--font-mono); font-size:var(--text-xs); letter-spacing:0.16em;
+  text-transform:uppercase; color:var(--muted); margin-top:var(--space-2); }
+
+.dk-ticker { border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--card); }
+.dk-ticker__track { display:flex; white-space:nowrap; width:max-content; animation:dk-scroll 30s linear infinite; }
+.dk-ticker:hover .dk-ticker__track { animation-play-state:paused; }
+.dk-ticker__item { display:inline-flex; align-items:center; gap:9px; font-family:var(--font-mono);
+  font-size:var(--text-xs); letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); padding:var(--space-4) 0; }
+.dk-ticker__item b { color:var(--fg); font-weight:600; letter-spacing:0.04em; }
+.dk-ticker__item--live b { color:var(--accent); }
+.dk-ticker__sep { color:var(--muted); opacity:0.5; margin:0 26px; }
+.dk-ticker__pip { width:7px; height:7px; border-radius:50%; background:var(--accent);
+  box-shadow:0 0 9px var(--accent-glow); animation:dk-pulse 1.7s ease-in-out infinite; }
+@keyframes dk-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
+@keyframes dk-pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+
+/* Poster grid */
+.dk-grid { display:grid; grid-template-columns:repeat(4,1fr); grid-template-rows:repeat(3,minmax(180px,auto)); gap:var(--space-4); }
+@media (max-width:980px){ .dk-grid { grid-template-columns:repeat(2,1fr); grid-template-rows:none; grid-auto-rows:minmax(160px,auto); } }
+@media (max-width:560px){ .dk-grid { grid-template-columns:1fr; grid-auto-rows:minmax(140px,auto); gap:var(--space-3); } }
+.dk-poster { position:relative; overflow:hidden; border-radius:18px; border:1px solid var(--border);
+  background:var(--card); cursor:pointer; isolation:isolate; display:block; width:100%; text-align:left;
+  color:inherit; font:inherit; opacity:0; transform:translateY(12px) scale(0.97);
+  animation:dk-posterIn 800ms var(--ease-premium) forwards;
+  transition:transform var(--duration-lift) var(--ease-premium), border-color var(--duration) var(--ease); will-change:transform; }
+@keyframes dk-posterIn { to { opacity:1; transform:translateY(0) scale(1); } }
+.dk-poster:hover { border-color:var(--border-strong); }
+.dk-poster--active:hover { border-color:rgba(110,231,183,0.35); box-shadow:0 0 40px rgba(110,231,183,0.08); }
+.dk-poster__art { position:absolute; inset:-10%; pointer-events:none; transition:transform 240ms var(--ease-out-soft); will-change:transform; }
+.dk-poster__index { position:absolute; top:var(--space-4); left:var(--space-4); z-index:2;
+  font-family:var(--font-serif); font-style:italic; font-size:var(--text-sm); color:rgba(255,255,255,0.45); letter-spacing:-0.01em; }
+.dk-poster__label { position:absolute; bottom:var(--space-4); left:var(--space-4); z-index:2;
+  font-family:var(--font-serif); font-style:italic; font-size:var(--text-xl); color:rgba(255,255,255,0.9);
+  letter-spacing:-0.015em; line-height:1; transition:color var(--duration) var(--ease); }
+.dk-poster--active:hover .dk-poster__label { color:var(--accent); }
+.dk-poster__arrow { position:absolute; bottom:var(--space-4); right:var(--space-4); z-index:2;
+  font-family:var(--font-serif); font-style:italic; font-size:var(--text-xl); color:rgba(255,255,255,0.5);
+  transition:color var(--duration) var(--ease), transform var(--duration) var(--ease); }
+.dk-poster--active:hover .dk-poster__arrow { color:var(--accent); transform:translateX(3px); }
+.dk-poster--hero { grid-column:span 2; grid-row:span 2; }
+.dk-poster--wideTop { grid-column:span 2; grid-row:span 1; }
+.dk-poster--tall { grid-column:span 1; grid-row:span 2; }
+.dk-poster--square { grid-column:span 1; grid-row:span 1; }
+.dk-poster--wideBot { grid-column:span 2; grid-row:span 1; }
+@media (max-width:980px){ .dk-poster--hero,.dk-poster--wideTop,.dk-poster--tall,.dk-poster--square,.dk-poster--wideBot { grid-column:span 1; grid-row:span 1; } .dk-poster--hero { grid-column:span 2; } }
+@media (max-width:560px){ .dk-poster--hero,.dk-poster--wideTop,.dk-poster--tall,.dk-poster--square,.dk-poster--wideBot { grid-column:span 1; grid-row:span 1; } }
+.dk-poster:nth-child(1){animation-delay:120ms} .dk-poster:nth-child(2){animation-delay:200ms}
+.dk-poster:nth-child(3){animation-delay:280ms} .dk-poster:nth-child(4){animation-delay:360ms}
+.dk-poster:nth-child(5){animation-delay:440ms} .dk-poster:nth-child(6){animation-delay:520ms}
+.dk-art--aurora { background:radial-gradient(ellipse 65% 50% at 30% 35%, rgba(110,231,183,0.55), transparent 60%),
+  radial-gradient(ellipse 70% 55% at 75% 70%, rgba(31,77,61,0.85), transparent 65%),
+  radial-gradient(ellipse 40% 40% at 60% 30%, rgba(245,158,11,0.10), transparent 70%),
+  linear-gradient(180deg,#052e22 0%,#000 100%); filter:saturate(1.1); animation:dk-auroraDrift 28s ease-in-out infinite alternate; }
+@keyframes dk-auroraDrift { 0%{transform:scale(1) rotate(0deg)} 100%{transform:scale(1.08) rotate(8deg)} }
+.dk-art--grid { background:repeating-linear-gradient(45deg, transparent 0 22px, rgba(110,231,183,0.05) 22px 23px),
+  repeating-linear-gradient(-45deg, transparent 0 22px, rgba(255,255,255,0.025) 22px 23px),
+  linear-gradient(135deg,#050a08 0%,#000 100%); animation:dk-gridDrift 40s linear infinite; }
+@keyframes dk-gridDrift { from{background-position:0 0,0 0,0 0} to{background-position:220px 0,-220px 0,0 0} }
+.dk-art--dots { background:radial-gradient(circle, rgba(110,231,183,0.45) 1px, transparent 1.5px),
+  radial-gradient(ellipse 60% 80% at 50% 50%, rgba(110,231,183,0.08), transparent 65%),
+  linear-gradient(180deg,#04130d 0%,#000 100%); background-size:16px 16px,100% 100%,100% 100%; animation:dk-dotsRotate 120s linear infinite; }
+@keyframes dk-dotsRotate { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.dk-art--duotone { background:radial-gradient(ellipse 80% 60% at 30% 30%, rgba(245,158,11,0.35), transparent 65%),
+  linear-gradient(135deg, var(--amber-warm) 0%, var(--wine) 65%, #1a0808 100%); animation:dk-duotoneShift 22s ease-in-out infinite alternate; }
+@keyframes dk-duotoneShift { 0%{filter:saturate(0.95) hue-rotate(0deg)} 100%{filter:saturate(1.05) hue-rotate(-6deg)} }
+.dk-art--frosted { background:radial-gradient(ellipse 60% 50% at 30% 30%, rgba(110,231,183,0.5), transparent 65%),
+  radial-gradient(ellipse 70% 60% at 75% 70%, rgba(67,56,202,0.45), transparent 65%),
+  linear-gradient(180deg,#0a0a1e 0%,#02020a 100%); filter:saturate(1.2); }
+.dk-art--frosted::after { content:''; position:absolute; width:70%; height:70%; top:15%; left:15%; border-radius:50%;
+  background:rgba(255,255,255,0.04); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,0.06); animation:dk-frostedBob 16s ease-in-out infinite alternate; }
+@keyframes dk-frostedBob { 0%{transform:translate(0,0) scale(1)} 100%{transform:translate(4%,-3%) scale(1.04)} }
+
+/* ============================================================
+ * Lab chrome — page-specific layout (not part of the kit)
+ * ============================================================ */
+* { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+html { scroll-behavior:smooth; }
+body { background:var(--bg); color:var(--fg); font-family:var(--font-sans); line-height:1.5;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; accent-color:var(--accent); }
+::selection { background:rgba(110,231,183,0.25); }
+a { color:inherit; text-decoration:none; }
+
+/* The signature backdrop, fixed behind everything */
+#vt-backdrop { position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; background:var(--bg); }
+#vt-backdrop .wb-atmosphere { position:absolute; inset:0;
+  background:radial-gradient(60% 50% at 50% 32%, rgba(110,231,183,0.16) 0%, rgba(110,231,183,0.05) 34%, rgba(110,231,183,0) 66%),
+  radial-gradient(34% 26% at 50% 38%, rgba(255,226,181,0.06) 0%, rgba(255,226,181,0) 72%),
+  radial-gradient(130% 90% at 50% 120%, rgba(14,38,30,0.8) 0%, rgba(0,0,0,1) 72%); }
+#vt-backdrop .wb-mountains { position:absolute; left:0; right:0; bottom:0; height:40vh; min-height:220px; }
+#vt-backdrop .wb-mountains svg { width:100%; height:100%; display:block; }
+#vt-backdrop .wb-particles { position:absolute; inset:0; }
+#vt-backdrop .wb-particles span { position:absolute; width:1.5px; height:1.5px; background:rgba(233,239,233,0.55);
+  border-radius:50%; box-shadow:0 0 4px rgba(167,243,208,0.35); animation:vtDrift linear infinite; }
+@keyframes vtDrift { 0%{transform:translate3d(0,0,0);opacity:0} 8%{opacity:0.7} 92%{opacity:0.5} 100%{transform:translate3d(var(--dx,12px),var(--dy,-100vh),0);opacity:0} }
+#vt-grain { position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:0.05; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); background-size:200px 200px; }
+
+/* Top bar */
+.lab-top { position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:var(--space-4);
+  padding:14px max(var(--space-6), env(safe-area-inset-left)); border-bottom:1px solid var(--border);
+  background:rgba(0,0,0,0.55); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); }
+.lab-top__brand { font-family:var(--font-serif); font-style:italic; font-size:var(--text-lg); letter-spacing:-0.015em; }
+.lab-top__brand b { color:var(--accent); font-weight:500; }
+.lab-nav { display:flex; gap:2px; margin-left:auto; flex-wrap:wrap; }
+.lab-nav a { font-family:var(--font-mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+  color:var(--muted); padding:6px 10px; border-radius:var(--radius-pill); transition:color var(--duration) var(--ease), background var(--duration) var(--ease); }
+.lab-nav a:hover { color:var(--fg); background:var(--card); }
+
+.lab { max-width:1180px; margin:0 auto; padding:var(--space-12) var(--space-6) var(--space-16);
+  display:flex; flex-direction:column; gap:var(--space-16); }
+
+.lab-hero h1 { font-family:var(--font-serif); font-style:italic; font-weight:400; font-size:clamp(40px,7vw,76px);
+  letter-spacing:-0.03em; line-height:1; }
+.lab-hero h1 em { color:var(--accent); font-style:italic; }
+.lab-hero p { color:var(--muted-strong); max-width:62ch; margin-top:18px; font-size:var(--text-lg); }
+.lab-hero__row { display:flex; gap:10px; flex-wrap:wrap; margin-top:24px; align-items:center; }
+
+.lab-sec__head { margin-bottom:var(--space-6); }
+.lab-sec__eyebrow { font-family:var(--font-mono); font-size:var(--text-xs); letter-spacing:0.18em; text-transform:uppercase; color:var(--accent); }
+.lab-sec__title { font-family:var(--font-serif); font-style:italic; font-weight:400; font-size:var(--text-3xl); letter-spacing:-0.02em; margin-top:8px; }
+.lab-sec__desc { color:var(--muted-strong); max-width:64ch; margin-top:10px; }
+
+/* swatches */
+.swatches { display:grid; grid-template-columns:repeat(auto-fill,minmax(176px,1fr)); gap:var(--space-3); }
+.swatch { border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; background:var(--card); }
+.swatch__chip { height:80px; position:relative; }
+.swatch__chip--border { display:flex; align-items:center; justify-content:center; }
+.swatch__chip--border span { width:64%; height:46%; border-radius:var(--radius-sm); }
+.swatch__meta { padding:10px 12px; display:flex; flex-direction:column; gap:3px; }
+.swatch__name { font-family:var(--font-mono); font-size:var(--text-xs); }
+.swatch__val { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+
+.lab-subhead { font-family:var(--font-mono); font-size:var(--text-xs); letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin:var(--space-6) 0 var(--space-3); }
+
+/* type */
+.type-specimen { border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-6); background:var(--card); margin-bottom:var(--space-3); }
+.type-specimen .tag { font-family:var(--font-mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.type-specimen .big { margin-top:10px; line-height:1.05; }
+.type-scale { display:flex; flex-direction:column; gap:10px; }
+.type-scale .row { display:flex; align-items:baseline; gap:18px; border-bottom:1px solid var(--border); padding-bottom:10px; }
+.type-scale .row .k { font-family:var(--font-mono); font-size:11px; color:var(--muted); min-width:120px; }
+
+/* generic grids */
+.grid-auto { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:var(--space-4); }
+.row-wrap { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+.stack { display:flex; flex-direction:column; gap:var(--space-4); }
+
+/* background tiles */
+.bg-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:var(--space-4); }
+.bg-tile { position:relative; height:190px; border-radius:var(--radius-lg); overflow:hidden; border:1px solid var(--border); isolation:isolate; }
+.bg-tile__name { position:absolute; left:14px; bottom:12px; z-index:3; font-family:var(--font-serif); font-style:italic; font-size:var(--text-base); color:rgba(255,255,255,0.92); }
+.bg-tile__sub { position:absolute; left:14px; top:12px; z-index:3; font-family:var(--font-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+.bg-mountains { position:absolute; left:0; right:0; bottom:0; height:55%; }
+.bg-mountains svg { width:100%; height:100%; display:block; }
+.bg-atmosphere { position:absolute; inset:0; background:radial-gradient(60% 55% at 50% 35%, rgba(110,231,183,0.22), transparent 62%), linear-gradient(180deg,#052e22,#000); }
+.bg-pageshell { background:#000; }
+.bg-pageshell::before { content:''; position:absolute; inset:-10%; background:radial-gradient(ellipse 50% 35% at 70% 20%, rgba(110,231,183,0.16), transparent 65%), radial-gradient(ellipse 40% 30% at 20% 80%, rgba(110,231,183,0.10), transparent 70%); animation:dk-drift 60s ease-in-out infinite alternate; }
+@keyframes dk-drift { from{transform:translate3d(0,0,0)} to{transform:translate3d(-2%,1%,0)} }
+.bg-finance { background:radial-gradient(60% 45% at 82% 14%, rgba(224,118,88,0.28), transparent 55%), radial-gradient(55% 45% at 18% 90%, rgba(180,180,200,0.10), transparent 55%), linear-gradient(180deg,#0A0A0B,#050506); }
+.bg-grain { background:#050506; }
+.bg-grain::after { content:''; position:absolute; inset:0; background-image:radial-gradient(rgba(255,255,255,0.5) 1px, transparent 1px); background-size:3px 3px; opacity:0.5; }
+
+/* tokens viz */
+.space-rows, .radius-rows { display:flex; flex-direction:column; gap:12px; }
+.space-row { display:flex; align-items:center; gap:14px; }
+.space-row .k { font-family:var(--font-mono); font-size:11px; color:var(--muted); min-width:120px; }
+.space-row .bar { height:14px; background:var(--accent); border-radius:3px; }
+.radius-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:var(--space-4); }
+.radius-cell { border:1px solid var(--border-strong); background:var(--card-elevated); height:90px; display:flex; align-items:flex-end; padding:10px; }
+.radius-cell .k { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.motion-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:var(--space-4); }
+.motion-cell { border:1px solid var(--border); border-radius:var(--radius-lg); padding:var(--space-4); background:var(--card); overflow:hidden; }
+.motion-cell .k { font-family:var(--font-mono); font-size:11px; color:var(--muted); }
+.motion-cell .curve { font-family:var(--font-mono); font-size:10px; color:var(--muted); opacity:0.7; }
+.motion-cell .track { margin-top:14px; height:18px; position:relative; }
+.motion-cell .dot { position:absolute; top:2px; left:0; width:14px; height:14px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent-glow); }
+.motion-cell:hover .dot { left:calc(100% - 14px); }
+.motion-cell .dot.e1 { transition:left 900ms var(--ease); }
+.motion-cell .dot.e2 { transition:left 900ms var(--ease-premium); }
+.motion-cell .dot.e3 { transition:left 900ms var(--ease-out-soft); }
+
+.foot { color:var(--muted); font-size:var(--text-sm); border-top:1px solid var(--border); padding-top:var(--space-6); }
+.hint { font-family:var(--font-mono); font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- ===== Signature backdrop ===== -->
+<div id="vt-backdrop" aria-hidden="true">
+  <div class="wb-atmosphere"></div>
+  <div class="wb-mountains">
+    <svg viewBox="0 0 1600 420" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="mt-far" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#0d1a17" stop-opacity="0"/>
+          <stop offset="55%" stop-color="#0d1a17" stop-opacity=".55"/>
+          <stop offset="100%" stop-color="#0d1a17" stop-opacity=".95"/>
+        </linearGradient>
+        <linearGradient id="mt-near" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#050a09" stop-opacity=".4"/>
+          <stop offset="60%" stop-color="#050a09" stop-opacity=".95"/>
+          <stop offset="100%" stop-color="#050a09" stop-opacity="1"/>
+        </linearGradient>
+      </defs>
+      <path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#mt-far)"/>
+      <path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#mt-near)"/>
+    </svg>
+  </div>
+  <div class="wb-particles" id="wb-particles"></div>
+</div>
+<div id="vt-grain" aria-hidden="true"></div>
+
+<!-- ===== Top bar ===== -->
+<header class="lab-top">
+  <div class="lab-top__brand">Vitality <b>Design Lab</b></div>
+  <nav class="lab-nav">
+    <a href="#colors">Color</a>
+    <a href="#type">Type</a>
+    <a href="#backgrounds">Backgrounds</a>
+    <a href="#components">Components</a>
+    <a href="#posters">Posters</a>
+    <a href="#tokens">Tokens</a>
+    <button class="dk-btn dk-btn--pill" id="serifToggle" style="margin-left:6px;">Serif: Newsreader</button>
+  </nav>
+</header>
+
+<main class="lab">
+
+  <!-- Hero -->
+  <section class="lab-hero">
+    <h1>Everything,<br>in one <em>place</em>.</h1>
+    <p>Every color, font, background and component in the Vitality system — live, on the real backdrop. This page <em>is</em> the design system: tweak a token and it all moves together.</p>
+    <div class="lab-hero__row">
+      <span class="dk-badge dk-badge--accent"><span class="dk-badge__dot"></span>Design system</span>
+      <span class="dk-badge dk-badge--neutral">dark · editorial · mint</span>
+      <span class="hint">source: design-kit/ · globals.css · mountains-background.html</span>
+    </div>
+  </section>
+
+  <!-- COLOR -->
+  <section id="colors">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">01 — Color</div>
+      <div class="lab-sec__title">The palette</div>
+      <p class="lab-sec__desc">Pure black canvas, restrained neutrals, one confident mint accent. Surfaces are translucent white at very low alpha — borders separate, fills don't.</p>
+    </div>
+
+    <div class="lab-subhead">Brand · mint</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch__chip" style="background:#6EE7B7"></div><div class="swatch__meta"><span class="swatch__name">--accent</span><span class="swatch__val">#6EE7B7</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#5dd6a6"></div><div class="swatch__meta"><span class="swatch__name">--accent-hover</span><span class="swatch__val">#5dd6a6</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#1f4d3d"></div><div class="swatch__meta"><span class="swatch__name">--accent-deep</span><span class="swatch__val">#1f4d3d</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#000;box-shadow:inset 0 0 50px rgba(110,231,183,0.5)"></div><div class="swatch__meta"><span class="swatch__name">--accent-glow</span><span class="swatch__val">rgba(110,231,183,.4)</span></div></div>
+    </div>
+
+    <div class="lab-subhead">Supporting</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch__chip" style="background:#F59E0B"></div><div class="swatch__meta"><span class="swatch__name">--amber</span><span class="swatch__val">#F59E0B</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#d97706"></div><div class="swatch__meta"><span class="swatch__name">--amber-warm</span><span class="swatch__val">#d97706</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#7c2d12"></div><div class="swatch__meta"><span class="swatch__name">--wine</span><span class="swatch__val">#7c2d12</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#EF4444"></div><div class="swatch__meta"><span class="swatch__name">--red</span><span class="swatch__val">#EF4444</span></div></div>
+    </div>
+
+    <div class="lab-subhead">Canvas · text</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch__chip" style="background:#000;border-bottom:1px solid var(--border)"></div><div class="swatch__meta"><span class="swatch__name">--bg</span><span class="swatch__val">#000000</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#0a0a0a"></div><div class="swatch__meta"><span class="swatch__name">--bg-elevated</span><span class="swatch__val">#0a0a0a</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#fff"></div><div class="swatch__meta"><span class="swatch__name">--fg</span><span class="swatch__val">#ffffff</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:rgba(255,255,255,0.7)"></div><div class="swatch__meta"><span class="swatch__name">--muted-strong</span><span class="swatch__val">white / 70%</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:rgba(255,255,255,0.5)"></div><div class="swatch__meta"><span class="swatch__name">--muted</span><span class="swatch__val">white / 50%</span></div></div>
+    </div>
+
+    <div class="lab-subhead">Surfaces · borders</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch__chip" style="background:rgba(255,255,255,0.02)"></div><div class="swatch__meta"><span class="swatch__name">--card</span><span class="swatch__val">white / 2%</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:rgba(255,255,255,0.04)"></div><div class="swatch__meta"><span class="swatch__name">--card-elevated</span><span class="swatch__val">white / 4%</span></div></div>
+      <div class="swatch"><div class="swatch__chip swatch__chip--border"><span style="border:1px solid rgba(255,255,255,0.08)"></span></div><div class="swatch__meta"><span class="swatch__name">--border</span><span class="swatch__val">white / 8%</span></div></div>
+      <div class="swatch"><div class="swatch__chip swatch__chip--border"><span style="border:1px solid rgba(255,255,255,0.16)"></span></div><div class="swatch__meta"><span class="swatch__name">--border-strong</span><span class="swatch__val">white / 16%</span></div></div>
+    </div>
+
+    <div class="lab-subhead">Finance standalone · coral (alternate palette)</div>
+    <div class="swatches">
+      <div class="swatch"><div class="swatch__chip" style="background:#E07658"></div><div class="swatch__meta"><span class="swatch__name">accent</span><span class="swatch__val">#E07658</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#6BE3A4"></div><div class="swatch__meta"><span class="swatch__name">success</span><span class="swatch__val">#6BE3A4</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#F2C063"></div><div class="swatch__meta"><span class="swatch__name">warning</span><span class="swatch__val">#F2C063</span></div></div>
+      <div class="swatch"><div class="swatch__chip" style="background:#FF6B6B"></div><div class="swatch__meta"><span class="swatch__name">danger</span><span class="swatch__val">#FF6B6B</span></div></div>
+    </div>
+  </section>
+
+  <!-- TYPE -->
+  <section id="type">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">02 — Typography</div>
+      <div class="lab-sec__title">Three faces</div>
+      <p class="lab-sec__desc">A workhorse sans, an editorial serif used <em>italic and sparingly</em>, and a mono for eyebrows and data. The italic serif is where the personality lives.</p>
+    </div>
+
+    <div class="type-specimen">
+      <div class="tag">Sans · Inter · UI + body</div>
+      <div class="big" style="font-family:var(--font-sans); font-weight:600; font-size:40px; letter-spacing:-0.02em;">Strength is built on quiet, repeated days.</div>
+      <div style="font-family:var(--font-sans); color:var(--muted-strong); margin-top:10px;">Regular 400 · Medium 500 · Semibold 600 · Bold 700 — the calm baseline everything sits on.</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="tag">Serif · italic · display (the personality)</div>
+      <div class="big" style="font-family:var(--font-serif); font-style:italic; font-size:52px; letter-spacing:-0.02em;">Your <em style="color:var(--accent)">peak</em> today</div>
+      <div style="font-family:var(--font-mono); color:var(--muted); font-size:11px; margin-top:12px; letter-spacing:0.1em; text-transform:uppercase;">live face: <span id="serifName">Newsreader</span> — toggle in the top bar</div>
+    </div>
+
+    <div class="type-specimen">
+      <div class="tag">Mono · JetBrains Mono · eyebrows + data</div>
+      <div class="big" style="font-family:var(--font-mono); font-size:22px; letter-spacing:0.04em;">87.4%  ·  7H 42M  ·  12.4 STRAIN</div>
+      <div style="font-family:var(--font-mono); color:var(--muted); margin-top:10px; font-size:11px; letter-spacing:0.18em; text-transform:uppercase;">eyebrow / kicker style</div>
+    </div>
+
+    <div class="lab-subhead">Type scale</div>
+    <div class="type-scale">
+      <div class="row"><span class="k">--text-3xl · 2.5rem</span><span style="font-size:var(--text-3xl); font-weight:600; letter-spacing:-0.025em;">Display</span></div>
+      <div class="row"><span class="k">--text-2xl · 1.75rem</span><span style="font-size:var(--text-2xl); font-weight:600;">Heading large</span></div>
+      <div class="row"><span class="k">--text-xl · 1.375rem</span><span style="font-size:var(--text-xl); font-weight:600;">Heading medium</span></div>
+      <div class="row"><span class="k">--text-lg · 1.125rem</span><span style="font-size:var(--text-lg);">Heading small</span></div>
+      <div class="row"><span class="k">--text-base · 1rem</span><span style="font-size:var(--text-base);">Body copy</span></div>
+      <div class="row"><span class="k">--text-sm · 0.875rem</span><span style="font-size:var(--text-sm);">Small / secondary</span></div>
+      <div class="row"><span class="k">--text-xs · 0.75rem</span><span style="font-size:var(--text-xs);">Caption / label</span></div>
+    </div>
+  </section>
+
+  <!-- BACKGROUNDS -->
+  <section id="backgrounds">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">03 — Backgrounds</div>
+      <div class="lab-sec__title">Atmosphere</div>
+      <p class="lab-sec__desc">Full-page backdrops (this page wears the first one) plus the five animated poster-art fills. All respect <span class="hint">prefers-reduced-motion</span>.</p>
+    </div>
+
+    <div class="lab-subhead">Full-page backdrops</div>
+    <div class="bg-grid">
+      <div class="bg-tile"><div class="bg-atmosphere"></div>
+        <div class="bg-mountains"><svg viewBox="0 0 1600 420" preserveAspectRatio="none"><path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="#0d1a17" fill-opacity=".8"/><path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="#050a09"/></svg></div>
+        <span class="bg-tile__sub">signature</span><span class="bg-tile__name">Aurora · Mountains · Particles</span></div>
+      <div class="bg-tile bg-pageshell"><span class="bg-tile__sub">dk-shell</span><span class="bg-tile__name">PageShell drifting glow</span></div>
+      <div class="bg-tile bg-finance"><span class="bg-tile__sub">finance.html</span><span class="bg-tile__name">Coral warm/cool wash</span></div>
+      <div class="bg-tile bg-grain"><span class="bg-tile__sub">globals.css</span><span class="bg-tile__name">Film grain overlay</span></div>
+    </div>
+
+    <div class="lab-subhead">Poster art fills</div>
+    <div class="bg-grid">
+      <div class="bg-tile"><div class="dk-poster__art dk-art--aurora"></div><span class="bg-tile__name">aurora</span></div>
+      <div class="bg-tile"><div class="dk-poster__art dk-art--grid"></div><span class="bg-tile__name">grid</span></div>
+      <div class="bg-tile"><div class="dk-poster__art dk-art--dots"></div><span class="bg-tile__name">dots</span></div>
+      <div class="bg-tile"><div class="dk-poster__art dk-art--duotone"></div><span class="bg-tile__name">duotone</span></div>
+      <div class="bg-tile"><div class="dk-poster__art dk-art--frosted"></div><span class="bg-tile__name">frosted</span></div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section id="components">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">04 — Components</div>
+      <div class="lab-sec__title">The kit</div>
+      <p class="lab-sec__desc">The real <span class="hint">dk-</span> components from design-kit, rendered live. Every value reads from a token.</p>
+    </div>
+
+    <div class="lab-subhead">Buttons</div>
+    <div class="row-wrap">
+      <button class="dk-btn dk-btn--primary">Primary</button>
+      <button class="dk-btn dk-btn--ghost">Ghost</button>
+      <button class="dk-btn dk-btn--pill">Back</button>
+      <button class="dk-btn dk-btn--link">Link button</button>
+      <button class="dk-btn dk-btn--primary" disabled>Disabled</button>
+    </div>
+
+    <div class="lab-subhead">Cards</div>
+    <div class="grid-auto">
+      <div class="dk-card">
+        <div class="dk-card__header"><div class="dk-card__eyebrow">Today</div><div class="dk-card__title">Readiness</div></div>
+        <p style="color:var(--muted-strong)">Default card — translucent fill, hairline border, serif-italic title, mono eyebrow.</p>
+      </div>
+      <div class="dk-card dk-card--elevated">
+        <div class="dk-card__header"><div class="dk-card__eyebrow">Elevated</div><div class="dk-card__title">Raised panel</div></div>
+        <p style="color:var(--muted-strong)">Brighter <span class="hint">--card-elevated</span> fill for modals and raised surfaces.</p>
+      </div>
+      <div class="dk-card dk-card--interactive">
+        <div class="dk-card__header"><div class="dk-card__eyebrow">Interactive</div><div class="dk-card__title">Hover me</div></div>
+        <p style="color:var(--muted-strong)">Mint hover glow + pointer. Try hovering this card.</p>
+      </div>
+    </div>
+
+    <div class="lab-subhead">Inputs</div>
+    <div class="grid-auto">
+      <div class="dk-field"><label class="dk-field__label">Workout</label><input class="dk-input" placeholder="What did you train?"></div>
+      <div class="dk-field"><label class="dk-field__label">Notes</label><textarea class="dk-textarea" placeholder="How did it feel?"></textarea></div>
+      <div class="dk-field"><label class="dk-field__label">With error</label><input class="dk-input" value="-12" style="border-color:var(--red)"><span class="dk-field__error">Must be a positive number.</span></div>
+    </div>
+
+    <div class="lab-subhead">Badges</div>
+    <div class="row-wrap">
+      <span class="dk-badge dk-badge--accent"><span class="dk-badge__dot"></span>On track</span>
+      <span class="dk-badge dk-badge--amber"><span class="dk-badge__dot"></span>Watch</span>
+      <span class="dk-badge dk-badge--red"><span class="dk-badge__dot"></span>Over limit</span>
+      <span class="dk-badge dk-badge--neutral">Neutral</span>
+    </div>
+
+    <div class="lab-subhead">Ring + Ticker</div>
+    <div class="grid-auto" style="align-items:center;">
+      <div class="dk-card" style="display:flex; justify-content:center;">
+        <div class="dk-ring" style="width:140px; height:140px;">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle class="dk-ring__track" cx="70" cy="70" r="60" fill="none" stroke-width="9"></circle>
+            <circle class="dk-ring__fill" id="ring1" cx="70" cy="70" r="60" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="376.99" stroke-dashoffset="376.99"></circle>
+          </svg>
+          <div class="dk-ring__center"><span class="dk-ring__num" style="font-size:34px;">82</span><span class="dk-ring__label">score</span></div>
+        </div>
+      </div>
+      <div style="grid-column:span 2; min-width:0;">
+        <div class="dk-ticker">
+          <div class="dk-ticker__track">
+            <span class="dk-ticker__item dk-ticker__item--live"><span class="dk-ticker__pip"></span>Live</span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Weight <b>81.2 kg</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Water <b>2.1 L</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Sleep <b>7h 42m</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Streak <b>14 days</b></span>
+            <span class="dk-ticker__sep">·</span>
+            <span class="dk-ticker__item dk-ticker__item--live"><span class="dk-ticker__pip"></span>Live</span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Weight <b>81.2 kg</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Water <b>2.1 L</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Sleep <b>7h 42m</b></span>
+            <span class="dk-ticker__sep">·</span><span class="dk-ticker__item">Streak <b>14 days</b></span>
+            <span class="dk-ticker__sep">·</span>
+          </div>
+        </div>
+        <p class="hint" style="margin-top:12px;">hover the ticker to pause it</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- POSTERS -->
+  <section id="posters">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">05 — Poster grid</div>
+      <div class="lab-sec__title">The bento</div>
+      <p class="lab-sec__desc">The dashboard's signature 4×3 bento — staggered reveal, each tile a different animated art. Collapses to 2-col then 1-col.</p>
+    </div>
+    <div class="dk-grid">
+      <button class="dk-poster dk-poster--hero dk-poster--active"><div class="dk-poster__art dk-art--aurora"></div><span class="dk-poster__index">01</span><span class="dk-poster__label">Train</span><span class="dk-poster__arrow">→</span></button>
+      <button class="dk-poster dk-poster--square dk-poster--active"><div class="dk-poster__art dk-art--dots"></div><span class="dk-poster__index">02</span><span class="dk-poster__label">Fuel</span><span class="dk-poster__arrow">→</span></button>
+      <button class="dk-poster dk-poster--square dk-poster--active"><div class="dk-poster__art dk-art--grid"></div><span class="dk-poster__index">03</span><span class="dk-poster__label">Mind</span><span class="dk-poster__arrow">→</span></button>
+      <button class="dk-poster dk-poster--tall dk-poster--active"><div class="dk-poster__art dk-art--frosted"></div><span class="dk-poster__index">04</span><span class="dk-poster__label">Peak</span><span class="dk-poster__arrow">→</span></button>
+      <button class="dk-poster dk-poster--square dk-poster--active"><div class="dk-poster__art dk-art--duotone"></div><span class="dk-poster__index">05</span><span class="dk-poster__label">Finance</span><span class="dk-poster__arrow">→</span></button>
+      <button class="dk-poster dk-poster--square dk-poster--active"><div class="dk-poster__art dk-art--aurora"></div><span class="dk-poster__index">06</span><span class="dk-poster__label">Brand</span><span class="dk-poster__arrow">→</span></button>
+    </div>
+  </section>
+
+  <!-- TOKENS -->
+  <section id="tokens">
+    <div class="lab-sec__head">
+      <div class="lab-sec__eyebrow">06 — Tokens</div>
+      <div class="lab-sec__title">Spacing, radius, motion</div>
+      <p class="lab-sec__desc">A 4px spacing scale, four radii, and three signature easings. <span class="hint">--ease-premium</span> is the house feel — use it for anything the user notices changing.</p>
+    </div>
+
+    <div class="lab-subhead">Spacing (4px scale)</div>
+    <div class="space-rows">
+      <div class="space-row"><span class="k">--space-1 · .25rem</span><span class="bar" style="width:0.25rem"></span></div>
+      <div class="space-row"><span class="k">--space-2 · .5rem</span><span class="bar" style="width:0.5rem"></span></div>
+      <div class="space-row"><span class="k">--space-3 · .75rem</span><span class="bar" style="width:0.75rem"></span></div>
+      <div class="space-row"><span class="k">--space-4 · 1rem</span><span class="bar" style="width:1rem"></span></div>
+      <div class="space-row"><span class="k">--space-6 · 1.5rem</span><span class="bar" style="width:1.5rem"></span></div>
+      <div class="space-row"><span class="k">--space-8 · 2rem</span><span class="bar" style="width:2rem"></span></div>
+      <div class="space-row"><span class="k">--space-10 · 2.5rem</span><span class="bar" style="width:2.5rem"></span></div>
+      <div class="space-row"><span class="k">--space-12 · 3rem</span><span class="bar" style="width:3rem"></span></div>
+      <div class="space-row"><span class="k">--space-16 · 4rem</span><span class="bar" style="width:4rem"></span></div>
+    </div>
+
+    <div class="lab-subhead">Radius</div>
+    <div class="radius-grid">
+      <div class="radius-cell" style="border-radius:var(--radius-sm)"><span class="k">--radius-sm · 6px</span></div>
+      <div class="radius-cell" style="border-radius:var(--radius-md)"><span class="k">--radius-md · 8px</span></div>
+      <div class="radius-cell" style="border-radius:var(--radius-lg)"><span class="k">--radius-lg · 12px</span></div>
+      <div class="radius-cell" style="border-radius:18px"><span class="k">poster · 18px</span></div>
+      <div class="radius-cell" style="border-radius:var(--radius-pill)"><span class="k">--radius-pill · 999px</span></div>
+    </div>
+
+    <div class="lab-subhead">Motion — hover each to feel it</div>
+    <div class="motion-grid">
+      <div class="motion-cell"><span class="k">--ease</span><div class="curve">cubic-bezier(.2,.8,.2,1)</div><div class="track"><span class="dot e1"></span></div></div>
+      <div class="motion-cell"><span class="k">--ease-premium ★</span><div class="curve">cubic-bezier(.16,1,.3,1)</div><div class="track"><span class="dot e2"></span></div></div>
+      <div class="motion-cell"><span class="k">--ease-out-soft</span><div class="curve">cubic-bezier(.32,.72,0,1)</div><div class="track"><span class="dot e3"></span></div></div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    Vitality Design Lab · sourced from <span class="hint">design-kit/</span>, <span class="hint">app/globals.css</span> &amp; <span class="hint">background/mountains-background.html</span>. Edit any token in this file and the whole page updates.
+  </footer>
+
+</main>
+
+<script>
+/* Drifting particles for the signature backdrop */
+(function () {
+  var root = document.getElementById('wb-particles');
+  if (!root) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var N = window.innerWidth < 640 ? 10 : 20;
+  for (var i = 0; i < N; i++) {
+    var s = document.createElement('span');
+    var dur = 18 + Math.random() * 22;
+    var size = 1 + Math.random() * 1.2;
+    s.style.left = (Math.random() * 100) + '%';
+    s.style.top = (60 + Math.random() * 40) + 'vh';
+    s.style.width = s.style.height = size + 'px';
+    s.style.animationDuration = dur + 's';
+    s.style.animationDelay = (-Math.random() * dur) + 's';
+    s.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
+    s.style.setProperty('--dy', (-(60 + Math.random() * 50)) + 'vh');
+    root.appendChild(s);
+  }
+})();
+
+/* Animate the ring to 82% */
+(function () {
+  var ring = document.getElementById('ring1');
+  if (!ring) return;
+  var C = 376.99; // 2 * pi * 60
+  requestAnimationFrame(function () {
+    setTimeout(function () { ring.style.strokeDashoffset = (C * (1 - 0.82)).toFixed(2); }, 150);
+  });
+})();
+
+/* Live serif toggle: Newsreader <-> Instrument Serif */
+(function () {
+  var btn = document.getElementById('serifToggle');
+  var nameEl = document.getElementById('serifName');
+  if (!btn) return;
+  var instrument = false;
+  btn.addEventListener('click', function () {
+    instrument = !instrument;
+    var fam = instrument ? "'Instrument Serif'" : "'Newsreader'";
+    document.documentElement.style.setProperty('--font-serif', fam + ", 'Times New Roman', Georgia, serif");
+    btn.textContent = 'Serif: ' + (instrument ? 'Instrument' : 'Newsreader');
+    if (nameEl) nameEl.textContent = instrument ? 'Instrument Serif' : 'Newsreader';
+  });
+})();
+</script>
+</body>
+</html>
