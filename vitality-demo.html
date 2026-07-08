@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#000000" />
+<title>Progressive overload · Barbell bench</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=JetBrains+Mono:wght@400;500&display=swap" />
+
+<style>
+  /* ====================================================================
+     Vitality progressive-overload history — one lift, fully self-contained.
+     Extracted verbatim from the Overload Design Lab (chrome stripped).
+     The whole Vitality look — fonts + mountains/glass/particles backdrop —
+     is baked in below, so it renders with NO external file. Mint accent
+     (#6EE7B7); amber (#f59e0b) only for the "best" highlights.
+     ================================================================= */
+  :root {
+    --bg:#000; --card:rgba(255,255,255,0.02); --row:rgba(255,255,255,0.03); --line:rgba(255,255,255,0.08); --hair:rgba(255,255,255,0.16);
+    --mint:#6EE7B7; --mint-ic:#6EE7B7; --ink:#042a1c; --gold:#f59e0b; --fail:#e06a6c;
+    --text:#fff; --muted:rgba(255,255,255,0.5); --muted-strong:rgba(255,255,255,0.7);
+    --font-serif:'Newsreader'; --vt-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; --vt-serif:'Newsreader','Times New Roman',Georgia,serif; --vt-mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+    --serif: var(--font-serif), 'Newsreader', Georgia, serif;
+    --sans: var(--vt-sans), 'Inter', system-ui, sans-serif;
+    --spring: cubic-bezier(.34,1.56,.64,1); --ease: cubic-bezier(.2,.8,.2,1);
+    --radius-lg:12px; --radius-pill:999px; --border:rgba(255,255,255,0.08); --border-strong:rgba(255,255,255,0.16);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  ::selection { background: var(--mint); color: var(--ink); }
+  html { background: var(--bg); }
+  body { margin:0; min-height:100dvh; padding: max(16px, env(safe-area-inset-top)) 14px calc(40px + env(safe-area-inset-bottom)); display:flex; background:transparent; color:var(--text); font-family:var(--sans); -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+  /* flex parent + margin:auto centers the sheet both ways when there's room,
+     and still scrolls from the top (title never clipped) when it doesn't. */
+  .shell { width: 100%; max-width: 640px; margin: auto; }
+
+  /* ── inlined Vitality backdrop (baked in from vitality-theme.js so the
+        mountains / glass atmosphere / particles render with NO external file) ── */
+  #vt-backdrop { position:fixed; inset:0; z-index:-1; pointer-events:none; overflow:hidden; background:var(--bg); }
+  #vt-backdrop .wb-atmosphere { position:absolute; inset:0; pointer-events:none; background:
+    radial-gradient(60% 50% at 50% 40%, rgba(110,231,183,.18) 0%, rgba(110,231,183,.06) 32%, rgba(110,231,183,0) 66%),
+    radial-gradient(34% 26% at 50% 44%, rgba(255,226,181,.08) 0%, rgba(255,226,181,0) 72%),
+    radial-gradient(130% 90% at 50% 120%, rgba(14,38,30,.85) 0%, rgba(0,0,0,1) 72%); }
+  #vt-backdrop .wb-mountains { position:absolute; left:0; right:0; bottom:0; height:42vh; min-height:240px; pointer-events:none; }
+  #vt-backdrop .wb-mountains svg { width:100%; height:100%; display:block; }
+  #vt-backdrop .wb-mist { position:absolute; left:0; right:0; bottom:30vh; height:24vh; pointer-events:none; background:linear-gradient(to top, rgba(0,0,0,0) 0%, rgba(110,231,183,.06) 40%, rgba(0,0,0,0) 100%); filter:blur(8px); }
+  #vt-backdrop .wb-particles { position:absolute; inset:0; pointer-events:none; }
+  #vt-backdrop .wb-particles span { position:absolute; width:1.5px; height:1.5px; background:rgba(233,239,233,.55); border-radius:50%; box-shadow:0 0 4px rgba(167,243,208,.35); animation:vtDrift linear infinite; }
+  @keyframes vtDrift { 0%{transform:translate3d(0,0,0);opacity:0;} 8%{opacity:.7;} 92%{opacity:.5;} 100%{transform:translate3d(var(--dx,12px),var(--dy,-100vh),0);opacity:0;} }
+  #vt-grain { position:fixed; inset:0; z-index:9999; pointer-events:none; opacity:.05; mix-blend-mode:overlay; background-image:url("data:image/svg+xml;utf8,<svg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'><filter id='vtn'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23vtn)'/></svg>"); background-size:200px 200px; }
+  @media (prefers-reduced-motion:reduce) { #vt-backdrop .wb-particles span { animation:none; } }
+  button { font-family: inherit; }
+  .num, .val, .stat .v, .setbox, td .num, .axis-label { font-variant-numeric: tabular-nums; }
+
+  /* ── the feature (re-skinned to Vitality) ───────────────────────────── */
+  .stage { display:flex; justify-content:center; }
+  .sheet { position: relative; width: 100%; max-width: 560px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 24px; backdrop-filter: blur(20px) saturate(1.2); -webkit-backdrop-filter: blur(20px) saturate(1.2); opacity: 0; transform: translateY(14px); animation: rise .6s var(--spring) forwards; }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  .head { display: flex; align-items: flex-start; justify-content: space-between; }
+  .head .eyebrow { font-family: var(--vt-mono, ui-monospace, monospace); text-transform: uppercase; letter-spacing: .2em; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .title { font-family: var(--serif); font-style:italic; font-size: 30px; font-weight: 500; line-height: 1.05; margin-top: 7px; letter-spacing: -0.01em; }
+  .x { background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px; }
+  .x svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; }
+  .x:hover { color: var(--text); }
+
+  .range { display: flex; gap: 3px; justify-content: center; background: var(--row); border: 1px solid var(--line); border-radius: 12px; padding: 4px; margin: 22px auto 0; width: fit-content; }
+  .range button { background: none; border: none; color: var(--muted); font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 8px 15px; border-radius: 9px; cursor: pointer; transition: color .2s, background .25s; }
+  .range button.on { background: var(--mint); color: var(--ink); }
+
+  .chart-card { margin-top: 20px; border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 20px 18px 16px; }
+  .plot { position: relative; width: 100%; aspect-ratio: 600 / 240; touch-action: pan-y; cursor: crosshair; }
+  .plot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+  .grid { stroke: var(--line); stroke-width: 1; }
+  .axis-label { fill: var(--muted); font-family: var(--sans); font-size: 11px; }
+  .area { fill: url(#fill); }
+  .line { fill: none; stroke: var(--mint); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+  .dot { fill: var(--mint); stroke: var(--card); stroke-width: 3; }
+  .dot.best { fill: var(--gold); r: 7; }
+  .dot.off { fill: var(--muted); stroke: var(--card); stroke-width: 3; opacity: .8; }
+  .drop { stroke: var(--muted); stroke-width: 1.4; stroke-dasharray: 2 4; opacity: .7; }
+  .guide { stroke: var(--hair); stroke-width: 1; stroke-dasharray: 3 4; opacity: 0; transition: opacity .12s; }
+  .guide.on { opacity: .85; }
+  .cursor-dot { fill: var(--mint); stroke: var(--card); stroke-width: 3; opacity: 0; transition: opacity .12s; pointer-events: none; }
+  .cursor-dot.on { opacity: 1; } .cursor-dot.off { fill: var(--muted); } .cursor-dot.best { fill: var(--gold); }
+  .xlab { fill: var(--muted); font-family: var(--sans); font-size: 11px; }
+  .xlab.best { fill: var(--mint); font-weight: 500; }
+  .delta-cap { text-align: center; font-size: 13px; font-weight: 500; color: var(--mint); margin-top: 8px; }
+
+  .scrub { position: absolute; transform: translate(-50%, -118%); background: var(--bg); border: 1px solid var(--hair); border-radius: 11px; padding: 8px 11px; pointer-events: none; opacity: 0; transition: opacity .15s; white-space: nowrap; z-index: 5; }
+  .scrub.on { opacity: 1; }
+  .scrub .d { color: var(--muted); font-size: 11px; font-weight: 500; }
+  .scrub .v { font-size: 17px; font-weight: 700; margin-top: 1px; } .scrub .v small { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .scrub .dl { font-size: 11.5px; color: var(--mint); font-weight: 500; margin-top: 1px; } .scrub .dl.off { color: var(--muted); }
+
+  .lastsets { display: flex; align-items: center; gap: 9px; margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--line); cursor: grab; user-select: none; touch-action: pan-y; }
+  .lastsets.dragging { cursor: grabbing; }
+  .lastsets .when { color: var(--muted); font-size: 13px; font-weight: 500; white-space: nowrap; }
+  .ls-chev { flex: none; width: 28px; height: 28px; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 19px; line-height: 1; cursor: pointer; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: color .18s, background .18s, border-color .18s, transform .18s var(--spring); font-family: var(--sans); }
+  .ls-chev:hover { color: var(--mint); border-color: var(--mint); background: rgba(110,231,183,.06); } .ls-chev:active { transform: scale(.86); }
+  .ls-chev[disabled] { opacity: .35; pointer-events: none; }
+  .ls-boxes { display: flex; gap: 9px; overflow: hidden; }
+  .setbox { width: 42px; height: 42px; border: 1px solid var(--gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 16px; color: var(--gold); flex: none; animation: boxpop .24s var(--spring); }
+  .setbox.fail { border-color: var(--fail); color: var(--fail); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .reps-total { margin-left: auto; letter-spacing: .14em; text-transform: uppercase; font-size: 11px; font-weight: 600; color: var(--mint); white-space: nowrap; }
+  @keyframes boxpop { from { opacity: .25; transform: scale(.8); } to { opacity: 1; transform: none; } }
+
+  .stats { display: flex; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--line); }
+  .stat { flex: 1; text-align: center; }
+  .stat .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+  .stat .v { font-family: var(--serif); font-style:italic; font-size: 25px; font-weight: 500; margin-top: 8px; }
+  .stat .v.up { color: var(--mint); } .stat .v.gold { color: var(--gold); }
+
+  .next { display: flex; align-items: center; gap: 12px; margin-top: 22px; border: 1px solid var(--line); border-radius: 14px; padding: 14px 15px; background: linear-gradient(180deg, rgba(245,158,11,.06), transparent); }
+  .next .star { flex: none; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: rgba(245,158,11,.12); }
+  .next .star svg { width: 17px; height: 17px; fill: var(--gold); }
+  .next .copy { font-size: 13.5px; line-height: 1.5; color: var(--text); }
+  .next .copy b { font-weight: 600; } .next .copy .goal { color: var(--gold); font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 24px; }
+  th { font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 0 14px; text-align: right; }
+  th:first-child { text-align: left; }
+  td { font-size: 14.5px; font-weight: 500; padding: 13px 0; text-align: right; border-top: 1px solid var(--line); color: var(--text); }
+  td:first-child { text-align: left; color: var(--muted); font-family: var(--serif); font-style:italic; }
+  td .num { font-weight: 700; } td .u { font-size: 11px; color: var(--muted); font-weight: 500; }
+  td.prog { color: var(--mint); } td.prog.first { color: var(--muted); }
+  .best-w { color: var(--gold); display: inline-flex; align-items: center; gap: 5px; justify-content: flex-end; }
+  .best-w svg { width: 13px; height: 13px; fill: var(--gold); }
+  tr.logrow { cursor: pointer; transition: background .15s; }
+  tr.logrow:hover td { background: rgba(110,231,183,.04); }
+  tr.off td, tr.off td:first-child { color: var(--muted); }
+  .moon { display: inline-flex; align-items: center; gap: 6px; } .moon svg { width: 12px; height: 12px; fill: var(--muted); }
+  td.prog.rest { color: var(--muted); font-size: 12px; }
+
+  .editor { overflow: hidden; max-height: 0; opacity: 0; transition: max-height .35s var(--spring), opacity .25s, margin .35s; }
+  .editor.on { max-height: 760px; opacity: 1; margin-top: 18px; }
+  .editor-in { border: 1px solid var(--hair); border-radius: 16px; padding: 18px; background: var(--row); }
+  .editor-h { font-size: 16px; font-weight: 600; }
+  .field { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+  .field .lbl { color: var(--muted); font-size: 14px; font-weight: 500; }
+  .stepper { display: flex; align-items: center; gap: 13px; }
+  .step { width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--hair); background: var(--bg); color: var(--text); font-size: 21px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .18s var(--spring), border-color .2s; font-family: var(--sans); }
+  .step:hover { border-color: var(--mint); } .step:active { transform: scale(.9); } .step.minus { color: var(--muted); }
+  .val { min-width: 88px; text-align: center; font-size: 18px; font-weight: 700; } .val small { font-size: 11px; font-weight: 500; color: var(--muted); }
+  .field input[type=date] { background: var(--bg); border: 1px solid var(--hair); color: var(--text); font-family: var(--sans); font-size: 14px; font-weight: 500; padding: 9px 12px; border-radius: 10px; color-scheme: dark; }
+  .setedit { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+  .eset { width: 42px; height: 42px; border: 1px solid var(--gold); border-radius: 10px; background: rgba(245,158,11,.06); color: var(--gold); font-weight: 600; font-size: 16px; font-family: var(--sans); font-variant-numeric: tabular-nums; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .15s var(--spring), border-color .18s; }
+  .eset:hover { border-color: var(--mint); } .eset:active { transform: scale(.88); }
+  .eset.fail { border-color: var(--fail); color: var(--fail); text-decoration: line-through; text-decoration-thickness: 2px; background: rgba(224,106,108,.08); }
+  .setedit-hint { color: var(--muted); font-size: 12px; margin-top: 9px; }
+  .resttoggle { display: flex; align-items: center; gap: 9px; margin-top: 16px; padding: 12px 13px; border: 1px solid var(--line); border-radius: 12px; cursor: pointer; transition: border-color .2s, background .2s; }
+  .resttoggle.on { border-color: var(--muted); background: rgba(255,255,255,.04); }
+  .resttoggle .pip { width: 18px; height: 18px; border-radius: 6px; border: 1.5px solid var(--hair); flex: none; display: flex; align-items: center; justify-content: center; }
+  .resttoggle.on .pip { background: var(--muted); border-color: var(--muted); }
+  .resttoggle .pip svg { width: 12px; height: 12px; fill: none; stroke: var(--bg); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; opacity: 0; }
+  .resttoggle.on .pip svg { opacity: 1; }
+  .resttoggle .txt { font-size: 13.5px; font-weight: 500; } .resttoggle .txt small { display: block; color: var(--muted); font-weight: 400; font-size: 12px; margin-top: 2px; }
+  .editor-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .obtn { flex: 1; border: none; border-radius: 12px; padding: 13px; font-family: var(--sans); font-size: 14.5px; font-weight: 600; cursor: pointer; transition: transform .18s var(--spring); }
+  .obtn:active { transform: scale(.98); }
+  .obtn.save { background: var(--mint); color: var(--ink); }
+  .obtn.del { flex: none; width: 50px; background: none; border: 1px solid var(--hair); color: var(--muted); }
+  .obtn.del:hover { border-color: var(--fail); color: var(--fail); }
+  .obtn.del svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+  .obtn.ghost { background: none; border: 1px solid var(--hair); color: var(--muted); }
+  .obtn.ghost:hover { color: var(--text); border-color: var(--muted); }
+  .obtn.danger { background: rgba(224,106,108,.12); border: 1px solid var(--fail); color: #e88a8c; }
+  .confirm-del { margin-top: 20px; } .confirm-q { display: block; text-align: center; font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 12px; } .confirm-row { display: flex; gap: 10px; }
+
+  .logbtn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; margin-top: 24px; border: 1.5px dashed var(--hair); border-radius: 14px; padding: 15px; background: none; color: var(--mint); font-family: var(--sans); font-size: 14.5px; font-weight: 500; cursor: pointer; transition: border-color .2s, transform .2s var(--spring); }
+  .logbtn:hover { border-color: var(--mint); } .logbtn:active { transform: scale(.99); }
+  .freshbtn { display: block; margin: 13px auto 0; background: none; border: none; color: var(--muted); font-family: var(--sans); font-size: 12.5px; font-weight: 500; cursor: pointer; padding: 8px 12px; border-radius: 9px; transition: color .18s; }
+  .freshbtn:hover { color: var(--text); } .freshbtn.arm { color: var(--fail); font-weight: 600; }
+  .store-note { text-align: center; color: var(--muted); font-size: 11.5px; font-weight: 500; margin-top: 4px; opacity: .85; }
+
+  .celebrate { position: fixed; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,.74); opacity: 0; pointer-events: none; transition: opacity .3s; padding: 24px; }
+  .celebrate.on { opacity: 1; pointer-events: auto; }
+  .celebrate .burst { text-align: center; max-width: 360px; transform: scale(.7); transition: transform .5s var(--spring); }
+  .celebrate.on .burst { transform: scale(1); }
+  .celebrate .bstar { width: 76px; height: 76px; margin: 0 auto; }
+  .celebrate .bstar svg { width: 100%; height: 100%; fill: var(--gold); filter: drop-shadow(0 0 22px rgba(245,158,11,.5)); }
+  .celebrate .ch1 { font-family: var(--serif); font-style:italic; font-size: 28px; font-weight: 500; margin-top: 16px; color: var(--gold); }
+  .celebrate .ch2 { font-size: 15px; font-weight: 500; color: var(--text); margin-top: 10px; line-height: 1.55; }
+  .celebrate .ch2 .goal { color: var(--gold); font-weight: 600; }
+  .celebrate .tap { color: var(--muted); font-size: 12.5px; margin-top: 22px; }
+
+  @media (max-width:480px) { .title { font-size:26px; } }
+  @media (prefers-reduced-motion: reduce) { *, .sheet, .tab.active { animation:none !important; transition-duration:0.01ms !important; } }
+</style>
+<style>
+/* ---- demo: Vitality workout page wrapping the verbatim overload tracker ---- */
+body{ display:block; padding:0; }
+.wk-wrap{ max-width:680px; margin:0 auto; padding:clamp(32px,6vh,64px) 20px 90px; }
+.wk-eyebrow{ font-family:var(--vt-mono,ui-monospace,monospace); text-transform:uppercase; letter-spacing:.22em; font-size:11px; font-weight:600; color:var(--mint); }
+.wk-title{ font-family:var(--serif); font-style:italic; font-size:34px; font-weight:500; line-height:1.05; margin-top:8px; }
+.wk-sub{ color:var(--muted); font-size:14px; margin-top:8px; }
+.ex-list{ display:flex; flex-direction:column; gap:12px; margin-top:28px; }
+.ex{ display:flex; align-items:center; justify-content:space-between; gap:14px; padding:16px 18px; border:1px solid var(--line); border-radius:14px; background:var(--card); -webkit-backdrop-filter:blur(16px) saturate(1.2); backdrop-filter:blur(16px) saturate(1.2); box-shadow:0 12px 40px rgba(0,0,0,.35); }
+.ex-name{ font-family:var(--serif); font-style:italic; font-size:19px; }
+.ex-meta{ color:var(--muted); font-size:12.5px; margin-top:4px; font-variant-numeric:tabular-nums; }
+.hist-btn{ flex:none; width:44px; height:44px; border-radius:999px; border:1px solid var(--mint); background:rgba(110,231,183,.08); color:var(--mint); display:inline-flex; align-items:center; justify-content:center; cursor:pointer; transition:background .18s, transform .15s; }
+.hist-btn:hover{ background:rgba(110,231,183,.18); }
+.hist-btn:active{ transform:scale(.92); }
+.hist-btn svg{ width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.hist-btn.off{ border-color:var(--line); color:var(--muted); background:none; cursor:default; opacity:.55; }
+.wk-hint{ color:var(--muted); font-size:13px; text-align:center; margin-top:24px; }
+.wk-hint b{ color:var(--mint); font-weight:600; }
+/* ---- popup over a scrim ---- */
+#ovl-scrim{ position:fixed; inset:0; background:rgba(0,0,0,.28); display:none; align-items:flex-start; justify-content:center; z-index:60; padding:clamp(16px,4vh,40px) 14px; overflow-y:auto; }
+#ovl-scrim.on{ display:flex; }
+/* when the tracker opens, lift the shared mountains backdrop above the workout so
+   the card sits on the Vitality atmosphere (not flat black) */
+#vt-backdrop.lift{ z-index:55; }
+#ovl-popup{ width:100%; max-width:600px; margin:auto; }
+#ovl-popup .shell{ margin:0; max-width:none; padding:0; }
+</style>
+</head>
+<body>
+<div id="vt-backdrop" aria-hidden="true">
+  <div class="wb-atmosphere"></div>
+  <div class="wb-mountains"><svg viewBox="0 0 1600 420" preserveAspectRatio="none"><defs><linearGradient id="vt-mt-far" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#0d1a17" stop-opacity="0"/><stop offset="55%" stop-color="#0d1a17" stop-opacity=".55"/><stop offset="100%" stop-color="#0d1a17" stop-opacity=".95"/></linearGradient><linearGradient id="vt-mt-near" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#050a09" stop-opacity=".4"/><stop offset="60%" stop-color="#050a09" stop-opacity=".95"/><stop offset="100%" stop-color="#050a09" stop-opacity="1"/></linearGradient></defs><path d="M0,300 L120,230 L210,260 L320,180 L430,220 L560,150 L680,210 L820,170 L960,220 L1100,180 L1240,240 L1380,200 L1500,250 L1600,220 L1600,420 L0,420 Z" fill="url(#vt-mt-far)"/><path d="M0,360 L100,320 L220,340 L340,290 L460,330 L590,300 L720,340 L860,310 L1000,350 L1140,310 L1280,355 L1420,320 L1540,360 L1600,340 L1600,420 L0,420 Z" fill="url(#vt-mt-near)"/></svg></div>
+  <div class="wb-mist"></div>
+  <div class="wb-particles"></div>
+</div>
+<div class="wk-wrap">  <div class="wk-head">    <div class="wk-eyebrow">Push day</div>    <div class="wk-title">Today's workout</div>    <div class="wk-sub">Chest &middot; shoulders &middot; triceps</div>  </div>  <div class="ex-list"><div class="ex"><div><div class="ex-name">Barbell Bench Press</div><div class="ex-meta">4 &times; 5 &middot; 85 kg &middot; new best</div></div><button class="hist-btn" id="benchHist" aria-label="Barbell Bench Press history" title="View history"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></button></div><div class="ex"><div><div class="ex-name">Incline Dumbbell Press</div><div class="ex-meta">3 &times; 8 &middot; 30 kg</div></div><button class="hist-btn off" title="Start logging to see history" disabled><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></button></div><div class="ex"><div><div class="ex-name">Cable Fly</div><div class="ex-meta">3 &times; 12 &middot; 18 kg</div></div><button class="hist-btn off" title="Start logging to see history" disabled><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></button></div><div class="ex"><div><div class="ex-name">Overhead Press</div><div class="ex-meta">4 &times; 6 &middot; 50 kg</div></div><button class="hist-btn off" title="Start logging to see history" disabled><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></button></div><div class="ex"><div><div class="ex-name">Tricep Pushdown</div><div class="ex-meta">3 &times; 12 &middot; 25 kg</div></div><button class="hist-btn off" title="Start logging to see history" disabled><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 4-6"/></svg></button></div>  </div>  <p class="wk-hint">Tap the <b>history icon</b> on Barbell Bench Press to open its progressive overload.</p></div>
+<div id="ovl-scrim"><div id="ovl-popup">
+<div class="shell">
+    <div class="stage">
+      <div class="sheet">
+        <div class="head">
+          <div><div class="eyebrow">History</div><div class="title">Barbell bench</div></div>
+          <button class="x" title="close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="range" id="range"></div>
+        <div class="chart-card">
+          <div class="plot" id="plot"><div class="scrub" id="scrub"></div></div>
+          <div class="delta-cap" id="cap"></div>
+          <div class="lastsets" id="lastsets"></div>
+        </div>
+        <div class="stats" id="stats"></div>
+        <div class="next" id="next"></div>
+        <table><thead><tr><th>Date</th><th>Sets</th><th>Reps</th><th>Weight</th><th>Progress</th></tr></thead><tbody id="tbody"></tbody></table>
+        <div class="editor" id="editor"></div>
+        <button class="logbtn" id="logbtn"><svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round"><path d="M12 5v14M5 12h14"/></svg> Log a session</button>
+        <button class="freshbtn" id="freshbtn">Start fresh</button>
+        <p class="store-note">Saved on this device. No account, no cloud, no internet needed.</p>
+      </div>
+    </div>
+</div>
+
+<div class="celebrate" id="celebrate">
+  <div class="burst">
+    <div class="bstar"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.1 6.6 .9-4.8 4.6 1.2 6.6L12 18.5 6.1 20.8l1.2-6.6L2.5 9.6l6.6-.9z"/></svg></div>
+    <div class="ch1">New best</div>
+    <div class="ch2" id="ch2"></div>
+    <div class="tap">tap to close</div>
+  </div>
+</div>
+
+</div></div>
+
+<div id="vt-grain" aria-hidden="true"></div>
+
+<script>
+
+const CELEBRATE = true;  /* baked from the lab's "Celebrate a new best" default */
+
+/* opt our controls out of vitality-theme.js's button reset (it boxes naked buttons) */
+function deVit(el){ if(!el||el.nodeType!==1) return; if(el.matches&&el.matches('button,input,select,textarea')) el.setAttribute('data-no-vitality',''); if(el.querySelectorAll) el.querySelectorAll('button,input,select,textarea').forEach(x=>x.setAttribute('data-no-vitality','')); }
+
+/* ====================================================================
+   THE FEATURE: one lift's history. (Verbatim from the Design Lab.)
+   ================================================================= */
+  const DAY = 86400000;
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const pad = n => String(n).padStart(2, '0');
+  const ymd = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const fromOffset = n => { const d = new Date(today.getTime() + n * DAY); d.setHours(0,0,0,0); return ymd(d); };
+  const parse = k => { const [y,m,d] = k.split('-').map(Number); return new Date(y, m-1, d); };
+  const daysAgo = k => Math.round((today - parse(k)) / DAY);
+  const label = k => parse(k).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const r1 = n => Math.round(n * 10) / 10;
+  const setCount  = p => (p.sets || []).length;
+  const topReps   = p => { const d = (p.sets || []).filter(s => !s.fail).map(s => s.r); return d.length ? Math.max(...d) : 0; };
+  const totalReps = p => (p.sets || []).reduce((a, s) => a + (s.r || 0), 0);
+
+  const SEED = [
+    { date: fromOffset(-19), kg: 75,   sets: [{ r: 8 }, { r: 8 }, { r: 7 }] },
+    { date: fromOffset(-15), kg: 77.5, sets: [{ r: 6 }, { r: 6 }, { r: 6 }, { r: 5 }] },
+    { date: fromOffset(-11), kg: 80,   sets: [{ r: 6 }, { r: 6 }, { r: 5 }, { r: 5 }] },
+    { date: fromOffset(-7),  kg: 82.5, sets: [{ r: 5 }, { r: 5 }, { r: 5 }, { r: 4 }] },
+    { date: fromOffset(-5),  kg: 72.5, sets: [{ r: 5 }, { r: 5 }, { r: 5 }], off: 'deload' },
+    { date: fromOffset(-3),  kg: 85,   sets: [{ r: 5 }, { r: 5 }, { r: 4 }, { r: 3, fail: true }] },
+  ];
+  const STORE = 'vitality.overload.bench.v3';
+  function saveLog() { try { localStorage.setItem(STORE, JSON.stringify(LOG)); } catch (e) {} }
+  function loadLog() { try { const raw = localStorage.getItem(STORE); if (raw) { const arr = JSON.parse(raw); if (Array.isArray(arr)) return arr; } } catch (e) {} return SEED.slice(); }
+  let LOG = loadLog(); saveLog();
+
+  const RANGES = { W: 7, M: 30, '3M': 90, '6M': 180, Y: 365, ALL: 99999 };
+  let active = 'ALL';
+  const VB_W = 600, VB_H = 240, PADL = 46, PADR = 20, PADT = 22, PADB = 36;
+  const plot = document.getElementById('plot');
+  const scrub = document.getElementById('scrub');
+  let curX = () => 0, curY = () => 0, curAll = [];
+  let setIdx = null;
+
+  function sortLog() { LOG.sort((a, b) => a.date.localeCompare(b.date)); }
+  function visible() { const w = RANGES[active]; return LOG.filter(p => daysAgo(p.date) <= w); }
+  function reals(list) { return list.filter(p => !p.off); }
+  function offs(list)  { return list.filter(p => p.off); }
+  function bestSession() { const r = reals(LOG); if (!r.length) return null; return r.reduce((b, p) => (p.kg > b.kg || (p.kg === b.kg && topReps(p) > topReps(b))) ? p : b); }
+  function prevReal(dateKey) { const before = reals(LOG).filter(p => p.date < dateKey); return before.length ? before[before.length - 1] : null; }
+
+  function render() { buildRange(); renderChart(); renderLastSets(); renderStats(); renderNext(); renderTable(); }
+
+  function buildRange() {
+    const el = document.getElementById('range');
+    el.innerHTML = Object.keys(RANGES).map(k => '<button class="' + (k === active ? 'on' : '') + '" data-r="' + k + '">' + k + '</button>').join('');
+    el.querySelectorAll('button').forEach(b => b.onclick = () => { active = b.dataset.r; render(); });
+  }
+
+  function renderChart() {
+    const list = visible(); const real = reals(list), off = offs(list);
+    if (!list.length) {
+      const prev = plot.querySelector('svg'); if (prev) prev.remove();
+      plot.insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 ' + VB_W + ' ' + VB_H + '" preserveAspectRatio="none"><line class="grid" x1="' + PADL + '" y1="' + (VB_H - PADB) + '" x2="' + (VB_W - PADR) + '" y2="' + (VB_H - PADB) + '"/><text class="xlab" x="' + (VB_W / 2) + '" y="' + ((VB_H - PADB) / 2 + 4) + '" text-anchor="middle">log your first session below</text></svg>');
+      curAll = []; document.getElementById('cap').textContent = ''; return;
+    }
+    const ws = list.map(p => p.kg);
+    const lo = Math.max(0, Math.floor(Math.min(...ws) / 5) * 5 - 5);
+    let hi = Math.ceil(Math.max(...ws) / 5) * 5 + 5;
+    if (hi - lo < 10) hi = lo + 10; if ((hi - lo) % 10 !== 0) hi += 5;
+    const oldestAgo = Math.max(...list.map(p => daysAgo(p.date)));
+    const domain = active === 'ALL' ? Math.max(oldestAgo, 1) : Math.max(RANGES[active], 1);
+    const X = k => { const f = Math.min(1, Math.max(0, 1 - daysAgo(k) / domain)); return PADL + f * (VB_W - PADL - PADR); };
+    const Y = kg => (VB_H - PADB) - (kg - lo) / (hi - lo) * (VB_H - PADB - PADT);
+    curX = p => X(p.date); curY = p => Y(p.kg); curAll = list;
+    const step = (hi - lo) <= 30 ? 5 : 10;
+    let svg = '<svg viewBox="0 0 ' + VB_W + ' ' + VB_H + '" preserveAspectRatio="none">';
+    svg += '<defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--mint);stop-opacity:.22"/><stop offset="1" style="stop-color:var(--mint);stop-opacity:0"/></linearGradient></defs>';
+    for (let kg = lo; kg <= hi; kg += step) {
+      svg += '<line class="grid" x1="' + PADL + '" y1="' + Y(kg) + '" x2="' + (VB_W - PADR) + '" y2="' + Y(kg) + '"/>';
+      svg += '<text class="axis-label" x="' + (PADL - 10) + '" y="' + (Y(kg) + 4) + '" text-anchor="end">' + kg + '</text>';
+    }
+    const best = bestSession();
+    if (real.length) {
+      const pts = real.map(p => X(p.date) + ',' + Y(p.kg));
+      const last = real[real.length - 1], first = real[0];
+      if (real.length > 1) {
+        svg += '<path class="area" d="M' + X(first.date) + ',' + (VB_H - PADB) + ' L' + pts.join(' L') + ' L' + X(last.date) + ',' + (VB_H - PADB) + ' Z"/>';
+        svg += '<polyline class="line" points="' + pts.join(' ') + '"/>';
+      }
+      svg += '<line class="drop" x1="' + X(last.date) + '" y1="' + Y(last.kg) + '" x2="' + X(last.date) + '" y2="' + (VB_H - PADB) + '"/>';
+      if (daysAgo(last.date) >= 2) svg += '<text class="xlab best" x="' + X(last.date) + '" y="' + (VB_H - PADB + 20) + '" text-anchor="middle">' + label(last.date) + '</text>';
+    }
+    svg += '<line id="guide" class="guide" y1="' + PADT + '" y2="' + (VB_H - PADB) + '"/>';
+    off.forEach(p => { svg += '<circle class="dot off" cx="' + X(p.date) + '" cy="' + Y(p.kg) + '" r="5"/>'; });
+    real.forEach(p => { svg += '<circle class="dot' + (best && p.date === best.date ? ' best' : '') + '" cx="' + X(p.date) + '" cy="' + Y(p.kg) + '" r="5"/>'; });
+    svg += '<circle id="cursorDot" class="cursor-dot" r="7"/>';
+    const oldest = list[0];
+    svg += '<text class="xlab" x="' + PADL + '" y="' + (VB_H - 6) + '" text-anchor="start">' + label(oldest.date) + '</text>';
+    svg += '<text class="xlab" x="' + (VB_W - PADR) + '" y="' + (VB_H - 6) + '" text-anchor="end">today</text>';
+    svg += '</svg>';
+    const old = plot.querySelector('svg'); if (old) old.remove();
+    plot.insertAdjacentHTML('afterbegin', svg);
+    renderCaption(real);
+  }
+
+  function scrubAt(clientX) {
+    if (!curAll.length) return;
+    const r = plot.querySelector('svg').getBoundingClientRect();
+    const vx = (clientX - r.left) / r.width * VB_W;
+    let best = curAll[0], bd = Infinity;
+    curAll.forEach(p => { const dx = Math.abs(curX(p) - vx); if (dx < bd) { bd = dx; best = p; } });
+    showTag(best);
+  }
+  function showTag(p) {
+    const prev = prevReal(p.date);
+    let dl = '<span class="dl off">rest day, off the line</span>';
+    if (!p.off) { const d = prev ? r1(p.kg - prev.kg) : null; dl = '<span class="dl">' + (d == null ? 'first session' : (d >= 0 ? '+' : '') + d + ' kg vs last') + '</span>'; }
+    scrub.innerHTML = '<div class="d">' + label(p.date) + ' &middot; ' + setCount(p) + ' sets, top ' + topReps(p) + '</div><div class="v">' + p.kg + ' <small>kg</small></div>' + dl;
+    scrub.style.left = (curX(p) / VB_W * 100) + '%'; scrub.style.top = (curY(p) / VB_H * 100) + '%'; scrub.classList.add('on');
+    const g = document.getElementById('guide'), c = document.getElementById('cursorDot');
+    if (g) { g.setAttribute('x1', curX(p)); g.setAttribute('x2', curX(p)); g.classList.add('on'); }
+    if (c) { c.setAttribute('cx', curX(p)); c.setAttribute('cy', curY(p)); const best = bestSession(); c.className.baseVal = 'cursor-dot on' + (p.off ? ' off' : (best && p.date === best.date ? ' best' : '')); }
+  }
+  function hideTag() { scrub.classList.remove('on'); const g = document.getElementById('guide'); if (g) g.classList.remove('on'); const c = document.getElementById('cursorDot'); if (c) c.classList.remove('on'); }
+  let dragging = false;
+  plot.addEventListener('pointerdown', e => { dragging = true; plot.setPointerCapture(e.pointerId); scrubAt(e.clientX); });
+  plot.addEventListener('pointermove', e => { if (dragging || e.pointerType === 'mouse') scrubAt(e.clientX); });
+  plot.addEventListener('pointerup', () => { dragging = false; });
+  plot.addEventListener('pointerleave', () => { if (!dragging) hideTag(); });
+
+  function renderCaption(real) {
+    const cap = document.getElementById('cap');
+    if (real.length < 2) { cap.textContent = real.length ? 'one session here' : 'no sessions in range'; return; }
+    const d = r1(real[real.length - 1].kg - real[0].kg);
+    const span = active === 'ALL' ? 'all time' : 'in ' + active;
+    cap.textContent = (d >= 0 ? '+' : '') + d + ' kg · ' + span;
+  }
+
+  function stripIdx() { const r = reals(LOG); if (!r.length) return -1; return setIdx == null ? r.length - 1 : Math.min(Math.max(setIdx, 0), r.length - 1); }
+  function renderLastSets() {
+    const r = reals(LOG); const el = document.getElementById('lastsets');
+    if (!r.length) { el.innerHTML = '<span class="when">no real sessions yet</span>'; return; }
+    const i = stripIdx(); const s = r[i];
+    const boxes = (s.sets || []).map(st => '<div class="setbox' + (st.fail ? ' fail' : '') + '">' + st.r + '</div>').join('');
+    const many = r.length > 1;
+    el.innerHTML = '<span class="when">' + label(s.date) + '</span>' +
+      (many ? '<button class="ls-chev" data-d="-1"' + (i === 0 ? ' disabled' : '') + '>&lsaquo;</button>' : '') +
+      '<div class="ls-boxes">' + boxes + '</div>' +
+      (many ? '<button class="ls-chev" data-d="1"' + (i === r.length - 1 ? ' disabled' : '') + '>&rsaquo;</button>' : '') +
+      '<span class="reps-total">' + totalReps(s) + ' reps</span>';
+    el.querySelectorAll('.ls-chev').forEach(b => b.onclick = () => stepStrip(+b.dataset.d));
+  }
+  function stepStrip(delta) { const r = reals(LOG); if (r.length < 2) return; const cur = stripIdx(); const n = Math.min(Math.max(cur + delta, 0), r.length - 1); if (n !== cur) { setIdx = n; renderLastSets(); } }
+  function wireStrip() {
+    const ls = document.getElementById('lastsets'); let down = false, startX = 0, startIdx = 0, acc = 0;
+    ls.addEventListener('pointerdown', e => { if (e.target.closest('.ls-chev')) return; down = true; ls.setPointerCapture(e.pointerId); startX = e.clientX; startIdx = stripIdx(); ls.classList.add('dragging'); });
+    ls.addEventListener('pointermove', e => { if (!down) return; const r = reals(LOG); const target = Math.min(Math.max(startIdx - Math.round((e.clientX - startX) / 46), 0), r.length - 1); if (target !== stripIdx()) { setIdx = target; renderLastSets(); } });
+    const end = () => { down = false; ls.classList.remove('dragging'); };
+    ls.addEventListener('pointerup', end); ls.addEventListener('pointercancel', end);
+    ls.addEventListener('wheel', e => { const r = reals(LOG); if (r.length < 2) return; const raw = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY; const cur = stripIdx(); if ((raw > 0 && cur <= 0) || (raw < 0 && cur >= r.length - 1)) return; e.preventDefault(); acc += raw; while (acc >= 28) { stepStrip(-1); acc -= 28; } while (acc <= -28) { stepStrip(1); acc += 28; } }, { passive: false });
+  }
+
+  function renderStats() {
+    const r = reals(LOG); const best = r.length ? Math.max(...r.map(p => p.kg)) : 0;
+    const win30 = r.filter(p => daysAgo(p.date) <= 30); const d30 = win30.length >= 2 ? r1(win30[win30.length - 1].kg - win30[0].kg) : 0;
+    document.getElementById('stats').innerHTML =
+      '<div class="stat"><div class="k">Sessions</div><div class="v">' + r.length + '</div></div>' +
+      '<div class="stat"><div class="k">Last 30 days</div><div class="v up">' + (d30 >= 0 ? '+' : '') + d30 + ' kg</div></div>' +
+      '<div class="stat"><div class="k">Best</div><div class="v gold">' + best + ' kg</div></div>';
+  }
+  function renderNext() {
+    const b = bestSession(); const el = document.getElementById('next');
+    if (!b) { el.style.display = 'none'; return; }
+    el.style.display = 'flex';
+    const tr = topReps(b), heavier = r1(b.kg + 2.5);
+    el.innerHTML = '<div class="star"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.1 6.6 .9-4.8 4.6 1.2 6.6L12 18.5 6.1 20.8l1.2-6.6L2.5 9.6l6.6-.9z"/></svg></div>' +
+      '<div class="copy">Your best is <b>' + b.kg + ' kg &times; ' + tr + '</b>. Beat it next session: <span class="goal">' + heavier + ' kg</span>, or <span class="goal">' + b.kg + ' kg &times; ' + (tr + 1) + '</span>.</div>';
+  }
+  function renderTable() {
+    const moon = '<span class="moon"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>rest</span>';
+    const rows = LOG.slice().reverse().map((p, ri) => {
+      const idx = LOG.length - 1 - ri;
+      if (p.off) return '<tr class="logrow off" data-i="' + idx + '"><td>' + moon + ' ' + label(p.date) + '</td><td>' + setCount(p) + '</td><td>' + topReps(p) + '</td><td><span class="num">' + p.kg + '</span> <span class="u">kg</span></td><td class="prog rest">off the line</td></tr>';
+      const prev = prevReal(p.date), d = prev ? r1(p.kg - prev.kg) : null, best = bestSession(), isBest = best && p.date === best.date;
+      const prog = d == null ? '<td class="prog first">first</td>' : '<td class="prog">' + (d >= 0 ? '+' : '') + d + '</td>';
+      const w = isBest ? '<td><span class="best-w"><svg viewBox="0 0 24 24"><path d="M12 3.5l2.5 5.1 5.6.8-4 3.9 1 5.6L12 16.9 6.9 18.9l1-5.6-4-3.9 5.6-.8z"/></svg><span class="num">' + p.kg + '</span> <span class="u">kg</span></span></td>'
+        : '<td><span class="num">' + p.kg + '</span> <span class="u">kg</span></td>';
+      return '<tr class="logrow" data-i="' + idx + '"><td>' + label(p.date) + '</td><td>' + setCount(p) + '</td><td>' + topReps(p) + '</td>' + w + prog + '</tr>';
+    }).join('');
+    document.getElementById('tbody').innerHTML = rows;
+    document.querySelectorAll('#tbody .logrow').forEach(tr => tr.onclick = () => openEditor(+tr.dataset.i));
+  }
+
+  let draft = null, editIndex = null, confirmDel = false;
+  function openEditor(index) {
+    editIndex = index; confirmDel = false;
+    if (index == null) { const base = bestSession() ? bestSession().kg : 60; draft = { date: ymd(today), kg: base, target: 5, sets: [{ r: 5 }, { r: 5 }, { r: 5 }, { r: 5 }], off: false }; }
+    else { const p = LOG[index]; draft = { date: p.date, kg: p.kg, target: topReps(p) || 5, sets: (p.sets || []).map(s => ({ r: s.r, fail: !!s.fail })), off: !!p.off }; }
+    drawEditor(); const ed = document.getElementById('editor'); ed.classList.add('on'); ed.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function closeEditor() { document.getElementById('editor').classList.remove('on'); draft = null; editIndex = null; confirmDel = false; }
+  function drawEditor() {
+    const ed = document.getElementById('editor'); const adding = editIndex == null;
+    const actions = confirmDel
+      ? '<div class="confirm-del"><span class="confirm-q">Delete this session?</span><div class="confirm-row"><button class="obtn ghost" id="f-cancel">Keep it</button><button class="obtn danger" id="f-yes">Delete</button></div></div>'
+      : '<div class="editor-actions">' + (adding ? '' : '<button class="obtn del" id="f-del" title="delete"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 11v6M14 11v6M6 7l1 12h10l1-12M9 7V4h6v3"/></svg></button>') + '<button class="obtn save" id="f-save">' + (adding ? 'Save session' : 'Save changes') + '</button></div>';
+    const setBoxes = draft.sets.map((s, i) => '<button class="eset' + (s.fail ? ' fail' : '') + '" data-i="' + i + '">' + s.r + '</button>').join('');
+    ed.innerHTML = '<div class="editor-in"><div class="editor-h">' + (adding ? 'Log a session' : 'Edit ' + label(draft.date)) + '</div>' +
+      '<div class="field"><span class="lbl">Date</span><input type="date" id="f-date" value="' + draft.date + '" max="' + ymd(today) + '"></div>' +
+      stepperRow('Weight', '<span class="val">' + draft.kg + ' <small>kg</small></span>', 'kg') +
+      stepperRow('Reps', '<span class="val">' + draft.target + '</span>', 'reps') +
+      stepperRow('Sets', '<span class="val">' + draft.sets.length + '</span>', 'sets') +
+      '<div class="setedit">' + setBoxes + '</div><div class="setedit-hint">Tap a set to lower its reps. Tap past 1 to mark it missed.</div>' +
+      '<div class="resttoggle' + (draft.off ? ' on' : '') + '" id="f-rest"><span class="pip"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span><span class="txt">Rest or deload day</span></div>' +
+      actions + '</div>';
+    ed.querySelector('#f-date').onchange = e => { draft.date = e.target.value; };
+    ed.querySelectorAll('.step').forEach(b => b.onclick = () => bump(b.dataset.k, +b.dataset.d));
+    ed.querySelectorAll('.eset').forEach(b => b.onclick = () => tapSet(+b.dataset.i));
+    ed.querySelector('#f-rest').onclick = () => { draft.off = !draft.off; drawEditor(); };
+    if (confirmDel) { ed.querySelector('#f-cancel').onclick = () => { confirmDel = false; drawEditor(); }; ed.querySelector('#f-yes').onclick = deleteDraft; }
+    else { ed.querySelector('#f-save').onclick = saveDraft; const del = ed.querySelector('#f-del'); if (del) del.onclick = () => { confirmDel = true; drawEditor(); }; }
+  }
+  function stepperRow(lbl, valHtml, key) { return '<div class="field"><span class="lbl">' + lbl + '</span><div class="stepper"><button class="step minus" data-k="' + key + '" data-d="-1">&minus;</button>' + valHtml + '<button class="step" data-k="' + key + '" data-d="1">+</button></div></div>'; }
+  function bump(key, dir) {
+    if (key === 'kg') draft.kg = Math.max(0, r1(draft.kg + dir * 2.5));
+    else if (key === 'reps') { draft.target = Math.max(1, draft.target + dir); draft.sets = draft.sets.map(() => ({ r: draft.target })); }
+    else if (key === 'sets') { if (dir > 0 && draft.sets.length < 10) draft.sets.push({ r: draft.target }); else if (dir < 0 && draft.sets.length > 1) draft.sets.pop(); }
+    drawEditor();
+  }
+  function tapSet(i) { const s = draft.sets[i]; if (s.fail) { s.fail = false; s.r = draft.target; } else if (s.r > 1) s.r -= 1; else s.fail = true; drawEditor(); }
+  function saveDraft() {
+    const beforeBest = bestSession();
+    const sets = draft.sets.map(s => s.fail ? { r: s.r, fail: true } : { r: s.r });
+    const entry = { date: draft.date, kg: draft.kg, sets };
+    if (draft.off) entry.off = 'deload';
+    if (editIndex == null) LOG.push(entry); else LOG[editIndex] = entry;
+    sortLog(); saveLog();
+    const newTop = topReps(entry);
+    const isNewBest = !draft.off && (!beforeBest || draft.kg > beforeBest.kg || (draft.kg === beforeBest.kg && newTop > topReps(beforeBest)));
+    closeEditor(); setIdx = null; render();
+    if (isNewBest && beforeBest && CELEBRATE) celebrate(entry);
+  }
+  function deleteDraft() { if (editIndex != null) LOG.splice(editIndex, 1); saveLog(); closeEditor(); setIdx = null; render(); }
+  function celebrate(entry) {
+    const tr = topReps(entry), heavier = r1(entry.kg + 2.5);
+    document.getElementById('ch2').innerHTML = 'You beat your record. Next time, arm the bump: <span class="goal">' + heavier + ' kg</span> or <span class="goal">' + entry.kg + ' kg &times; ' + (tr + 1) + '</span>.';
+    const c = document.getElementById('celebrate'); c.classList.add('on'); c.onclick = () => c.classList.remove('on');
+  }
+  function wireControls() {
+    document.getElementById('logbtn').onclick = () => openEditor(null);
+    document.querySelector('.x').onclick = () => { hideTag(); closeEditor(); };
+    wireStrip();
+    const fb = document.getElementById('freshbtn'); let armed = false, timer = null;
+    fb.onclick = () => {
+      if (!armed) { armed = true; fb.textContent = 'Tap again to wipe everything'; fb.classList.add('arm'); timer = setTimeout(() => { armed = false; fb.textContent = 'Start fresh'; fb.classList.remove('arm'); }, 3000); return; }
+      clearTimeout(timer); armed = false; fb.textContent = 'Start fresh'; fb.classList.remove('arm');
+      LOG = []; saveLog(); setIdx = null; closeEditor(); render();
+    };
+  }
+
+/* ---- inlined backdrop particles (baked in from vitality-theme.js) --- */
+function spawnParticles(root){
+  if(!root) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const N = window.innerWidth < 640 ? 10 : 18;
+  for(let i=0;i<N;i++){
+    const s = document.createElement('span');
+    const dur = 18 + Math.random()*22, size = 1 + Math.random()*1.2;
+    s.style.left = (Math.random()*100) + '%';
+    s.style.top = (60 + Math.random()*40) + 'vh';
+    s.style.width = s.style.height = size + 'px';
+    s.style.animationDuration = dur + 's';
+    s.style.animationDelay = (-Math.random()*dur) + 's';
+    s.style.setProperty('--dx', (Math.random()*30 - 15) + 'px');
+    s.style.setProperty('--dy', (-(60 + Math.random()*50)) + 'vh');
+    root.appendChild(s);
+  }
+}
+
+/* ---- boot ---------------------------------------------------------- */
+sortLog(); render(); wireControls();
+spawnParticles(document.querySelector('#vt-backdrop .wb-particles'));
+new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(deVit))).observe(document.body,{childList:true,subtree:true});
+deVit(document.body);
+
+/* ---- demo mount wiring (button -> popup over scrim) ---- */
+const ovlScrim = document.getElementById('ovl-scrim');
+const vtBg = document.getElementById('vt-backdrop');
+function openTracker(){ ovlScrim.classList.add('on'); if(vtBg) vtBg.classList.add('lift'); }
+function closeTracker(){ ovlScrim.classList.remove('on'); if(vtBg) vtBg.classList.remove('lift'); }
+document.getElementById('benchHist').addEventListener('click', openTracker);
+ovlScrim.addEventListener('click', e => { if (e.target === ovlScrim) closeTracker(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') closeTracker(); });
+const _x = document.querySelector('#ovl-popup .x'); if (_x) _x.addEventListener('click', closeTracker);
+</script>
+</body>
+</html>

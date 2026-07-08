@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#090c09">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Johnny">
+<title>Johnny</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: #090c09;
+  color: #c8c6be;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* subtle radial glows */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 15% 55%, rgba(107,227,164,0.05) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 10%, rgba(107,227,164,0.03) 0%, transparent 40%),
+    radial-gradient(ellipse at 65% 88%, rgba(220,110,70,0.06) 0%, transparent 40%);
+  pointer-events: none; z-index: 0;
+}
+
+/* dot grid */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.013) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none; z-index: 0;
+}
+
+.wrap {
+  position: relative; z-index: 1;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: max(28px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+}
+
+/* ── Header ─────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 26px;
+}
+
+.logo {
+  width: 68px; height: 68px;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 12px rgba(107,227,164,0.25));
+}
+
+.header-text { flex: 1; min-width: 0; }
+
+.greeting {
+  font-size: clamp(24px, 4vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  color: #e8e5de;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.greeting em {
+  font-style: italic;
+  color: #6be3a4;
+}
+
+.header-date {
+  margin-top: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(180,178,170,0.45);
+}
+
+.header-btn {
+  width: 42px; height: 42px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 50%;
+  background: rgba(255,255,255,0.03);
+  color: rgba(200,198,190,0.55);
+  text-decoration: none;
+  font-size: 17px;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.header-btn:hover {
+  background: rgba(255,255,255,0.07);
+  border-color: rgba(255,255,255,0.16);
+  color: #e8e5de;
+}
+
+/* ── Grid ───────────────────────────────────────────────── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 252px 252px 190px;
+  gap: 12px;
+}
+
+.card-train   { grid-column: 1 / 3; grid-row: 1 / 3; }
+.card-fuel    { grid-column: 3;     grid-row: 1; }
+.card-vitals  { grid-column: 3;     grid-row: 2; }
+.card-goals   { grid-column: 1;     grid-row: 3; }
+.card-peak    { grid-column: 2;     grid-row: 3; }
+.card-finance { grid-column: 3;     grid-row: 3; }
+
+/* ── Card base ──────────────────────────────────────────── */
+.card {
+  position: relative;
+  background: rgba(255,255,255,0.028);
+  border: 1px solid rgba(255,255,255,0.072);
+  border-radius: 20px;
+  padding: 18px 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.22s, background 0.22s, transform 0.2s, box-shadow 0.22s;
+  cursor: pointer;
+}
+
+.card:hover {
+  border-color: rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.046);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4);
+}
+
+.card:active { transform: translateY(0); box-shadow: none; }
+
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.card-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: rgba(200,198,190,0.28);
+  font-variant-numeric: tabular-nums;
+}
+
+.card-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px;
+  background: rgba(255,255,255,0.04);
+  color: rgba(200,198,190,0.5);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.card-visual {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-shrink: 0;
+  padding-top: 8px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: #e8e5de;
+  line-height: 1.2;
+}
+
+.card-sub {
+  margin-top: 3px;
+  font-size: 12px;
+  color: rgba(180,178,170,0.48);
+}
+
+.card-arrow {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  color: rgba(200,198,190,0.45);
+  font-size: 16px;
+  flex-shrink: 0;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+}
+
+.card:hover .card-arrow {
+  border-color: rgba(255,255,255,0.26);
+  color: #e8e5de;
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── Train card ─────────────────────────────────────────── */
+.card-train .card-title { font-size: 26px; }
+.card-train .card-sub   { font-size: 13px; }
+
+.train-svg {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 75%;
+  pointer-events: none;
+}
+
+/* ── Fuel card ──────────────────────────────────────────── */
+.fuel-orb {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 32%, rgba(140,240,180,0.95), rgba(70,200,130,0.35) 60%, transparent);
+  box-shadow:
+    0 0 18px rgba(107,227,164,0.55),
+    0 0 50px rgba(107,227,164,0.22),
+    0 0 90px rgba(107,227,164,0.10);
+  animation: orb-drift 4.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.fuel-sparks {
+  position: absolute; inset: 0;
+  pointer-events: none;
+}
+
+.fuel-spark {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(107,227,164,0.55);
+  animation: spark-drift 4.5s ease-in-out infinite;
+}
+
+@keyframes orb-drift {
+  0%,100% { transform: translateY(0) scale(1); box-shadow: 0 0 18px rgba(107,227,164,0.55), 0 0 50px rgba(107,227,164,0.22); }
+  50%     { transform: translateY(-9px) scale(1.05); box-shadow: 0 0 26px rgba(107,227,164,0.65), 0 0 70px rgba(107,227,164,0.28); }
+}
+
+@keyframes spark-drift {
+  0%,100% { transform: translate(0,0); opacity: 0.7; }
+  50%     { transform: translate(var(--dx, 5px), var(--dy, -8px)); opacity: 0.4; }
+}
+
+/* ── Vitals card ────────────────────────────────────────── */
+.vitals-svg {
+  width: 120px; height: 120px;
+  overflow: visible;
+}
+
+.v-ring {
+  fill: none;
+  stroke: rgba(107,227,164,0.12);
+  stroke-width: 1;
+}
+
+.v-tick {
+  stroke: rgba(107,227,164,0.2);
+  stroke-width: 1;
+}
+
+.v-sweep {
+  fill: none;
+  stroke: rgba(107,227,164,0.75);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transform-origin: 60px 60px;
+  animation: sweep 3.2s linear infinite;
+}
+
+.v-sweep-fade {
+  fill: none;
+  stroke: rgba(107,227,164,0.25);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  transform-origin: 60px 60px;
+  animation: sweep 3.2s linear infinite;
+  animation-delay: -0.4s;
+}
+
+.v-dot {
+  fill: #6be3a4;
+  animation: v-dot-blink 3.2s linear infinite;
+}
+
+@keyframes sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes v-dot-blink {
+  0%,15%  { opacity: 1; }
+  30%,100% { opacity: 0; }
+}
+
+/* ── Peak card ──────────────────────────────────────────── */
+.peak-num {
+  font-size: 52px;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: #e8e5de;
+  line-height: 1;
+}
+
+.peak-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(180,178,170,0.38);
+  margin-top: 5px;
+}
+
+/* ── Goals card ─────────────────────────────────────────── */
+.goals-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 8px);
+  grid-template-rows: repeat(3, 8px);
+  gap: 7px;
+}
+
+.g-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.g-dot.done    { background: #6be3a4; box-shadow: 0 0 5px rgba(107,227,164,0.6); }
+.g-dot.pending { background: rgba(255,255,255,0.16); }
+.g-dot.empty   { background: rgba(255,255,255,0.07); }
+
+/* ── Finance card ───────────────────────────────────────── */
+.card-finance {
+  background: rgba(22, 11, 5, 0.7);
+  border-color: rgba(224,118,72,0.14);
+}
+.card-finance:hover {
+  background: rgba(26, 14, 6, 0.8);
+  border-color: rgba(224,118,72,0.28);
+}
+.card-finance .card-icon { color: rgba(224,118,72,0.8); border-color: rgba(224,118,72,0.18); }
+.card-finance .card-arrow { border-color: rgba(224,118,72,0.22); color: rgba(220,140,100,0.6); }
+.card-finance:hover .card-arrow { border-color: rgba(224,118,72,0.5); color: #e07040; }
+
+.candles {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+  padding: 4px 0;
+}
+
+.candle {
+  flex: 1;
+  border-radius: 2px 2px 0 0;
+  min-height: 6px;
+}
+.candle.up { background: rgba(107,227,164,0.7); }
+.candle.dn { background: rgba(224,118,72,0.7); }
+
+/* ── Mobile ─────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    gap: 10px;
+  }
+  .card-train  { grid-column: 1 / 3; grid-row: auto; min-height: 220px; }
+  .card-fuel   { grid-column: 1;     grid-row: auto; min-height: 160px; }
+  .card-vitals { grid-column: 2;     grid-row: auto; min-height: 160px; }
+  .card-goals  { grid-column: 1;     grid-row: auto; min-height: 150px; }
+  .card-peak   { grid-column: 2;     grid-row: auto; min-height: 150px; }
+  .card-finance{ grid-column: 1 / 3; grid-row: auto; min-height: 140px; }
+
+  .card-train .card-title { font-size: 22px; }
+  .peak-num { font-size: 40px; }
+}
+
+@media (max-width: 420px) {
+  .grid { grid-template-columns: 1fr; gap: 8px; }
+  .card-train, .card-fuel, .card-vitals, .card-goals, .card-peak, .card-finance {
+    grid-column: 1; grid-row: auto;
+    min-height: 140px;
+  }
+  .card-train { min-height: 200px; }
+  .logo { width: 54px; height: 54px; }
+  .greeting { font-size: 22px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header class="header">
+    <!-- Geometric hexagon logo -->
+    <svg class="logo" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="30,2 55,16 55,44 30,58 5,44 5,16" fill="rgba(107,227,164,0.07)" stroke="rgba(107,227,164,0.45)" stroke-width="1.4"/>
+      <polygon points="30,2  55,16 30,30" fill="rgba(107,227,164,0.18)"/>
+      <polygon points="55,16 55,44 30,30" fill="rgba(107,227,164,0.07)"/>
+      <polygon points="55,44 30,58 30,30" fill="rgba(107,227,164,0.13)"/>
+      <polygon points="30,58  5,44 30,30" fill="rgba(107,227,164,0.06)"/>
+      <polygon points="5,44   5,16 30,30" fill="rgba(107,227,164,0.13)"/>
+      <polygon points="5,16  30,2  30,30" fill="rgba(107,227,164,0.09)"/>
+      <line x1="30" y1="2"  x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+      <line x1="55" y1="16" x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+      <line x1="55" y1="44" x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+      <line x1="30" y1="58" x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+      <line x1="5"  y1="44" x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+      <line x1="5"  y1="16" x2="30" y2="30" stroke="rgba(107,227,164,0.22)" stroke-width="0.7"/>
+    </svg>
+
+    <div class="header-text">
+      <div class="greeting" id="greeting">Good evening, <em>Johnny</em></div>
+      <div class="header-date" id="headerDate">—</div>
+    </div>
+
+    <a href="goals.html" class="header-btn" title="Goals &amp; habits">☰</a>
+  </header>
+
+  <!-- Bento grid -->
+  <div class="grid">
+
+    <!-- 01 · Train -->
+    <a href="gym.html" class="card card-train">
+      <div class="card-top">
+        <span class="card-num">01</span>
+        <span class="card-icon">⚡</span>
+      </div>
+      <div class="card-visual">
+        <svg class="train-svg" viewBox="0 0 520 180" preserveAspectRatio="none" fill="none">
+          <defs>
+            <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stop-color="rgba(107,227,164,0.22)"/>
+              <stop offset="100%" stop-color="rgba(107,227,164,0)"/>
+            </linearGradient>
+          </defs>
+          <!-- Horizontal guide lines -->
+          <line x1="0" y1="40"  x2="520" y2="40"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="0" y1="90"  x2="520" y2="90"  stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <line x1="0" y1="140" x2="520" y2="140" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+          <!-- Area fill -->
+          <path d="M0,148 C40,144 70,132 110,130 S180,118 230,122 S295,100 340,88 S400,68 450,55 S490,40 520,34 L520,180 L0,180 Z" fill="url(#lg)"/>
+          <!-- Trend line -->
+          <path d="M0,148 C40,144 70,132 110,130 S180,118 230,122 S295,100 340,88 S400,68 450,55 S490,40 520,34" stroke="rgba(107,227,164,0.75)" stroke-width="2.2" stroke-linejoin="round"/>
+          <!-- Data point dots -->
+          <circle cx="110" cy="130" r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="180" cy="124" r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="230" cy="122" r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="295" cy="104" r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="340" cy="88"  r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="400" cy="70"  r="4" fill="rgba(107,227,164,0.45)"/>
+          <circle cx="450" cy="55"  r="4" fill="rgba(107,227,164,0.45)"/>
+          <!-- Latest point (highlighted) -->
+          <circle cx="520" cy="34"  r="5.5" fill="#6be3a4"/>
+          <circle cx="520" cy="34"  r="9"   fill="rgba(107,227,164,0.18)"/>
+        </svg>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Train</div>
+          <div class="card-sub">Workouts, splits, sessions</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 02 · Fuel -->
+    <a href="po-water.html" class="card card-fuel">
+      <div class="card-top">
+        <span class="card-num">02</span>
+        <span class="card-icon" style="color:rgba(107,227,164,0.7);border-color:rgba(107,227,164,0.18)">💧</span>
+      </div>
+      <div class="card-visual">
+        <div class="fuel-orb"></div>
+        <div class="fuel-sparks">
+          <div class="fuel-spark" style="width:7px;height:7px;top:28%;right:22%;--dx:6px;--dy:-9px;animation-delay:0.4s"></div>
+          <div class="fuel-spark" style="width:5px;height:5px;top:62%;right:14%;--dx:-4px;--dy:-6px;animation-delay:1.1s"></div>
+          <div class="fuel-spark" style="width:4px;height:4px;top:22%;right:40%;--dx:3px;--dy:-5px;animation-delay:0.7s"></div>
+          <div class="fuel-spark" style="width:6px;height:6px;top:74%;right:32%;--dx:-5px;--dy:4px;animation-delay:1.8s"></div>
+        </div>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Fuel</div>
+          <div class="card-sub">Macros, water, supplements</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 03 · Vitals -->
+    <a href="health.html" class="card card-vitals">
+      <div class="card-top">
+        <span class="card-num">03</span>
+        <span class="card-icon" style="letter-spacing:-2px">〜</span>
+      </div>
+      <div class="card-visual">
+        <svg class="vitals-svg" viewBox="0 0 120 120">
+          <!-- outer tick marks -->
+          <circle class="v-ring" cx="60" cy="60" r="52"/>
+          <circle class="v-ring" cx="60" cy="60" r="38"/>
+          <circle class="v-ring" cx="60" cy="60" r="24"/>
+          <circle cx="60" cy="60" r="3" fill="rgba(107,227,164,0.25)"/>
+          <!-- sweep line (rotates) -->
+          <line class="v-sweep-fade" x1="60" y1="60" x2="60" y2="9"/>
+          <line class="v-sweep"      x1="60" y1="60" x2="60" y2="9"/>
+          <!-- blinking dot on sweep tip -->
+          <circle class="v-dot" cx="60" cy="9" r="3.5"/>
+          <!-- fixed accent dots -->
+          <circle cx="60"  cy="22" r="2" fill="rgba(107,227,164,0.18)"/>
+          <circle cx="98"  cy="60" r="2" fill="rgba(107,227,164,0.12)"/>
+          <circle cx="22"  cy="60" r="2" fill="rgba(107,227,164,0.12)"/>
+        </svg>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Vitals</div>
+          <div class="card-sub">Recovery, sleep, strain</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 04 · Goals -->
+    <a href="goals.html" class="card card-goals">
+      <div class="card-top">
+        <span class="card-num">04</span>
+        <span class="card-icon">✓</span>
+      </div>
+      <div class="card-visual">
+        <div class="goals-grid" id="goalsGrid"></div>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Goals</div>
+          <div class="card-sub" id="goalsSub">Daily tasks &amp; habits</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 05 · Peak -->
+    <a href="peak.html" class="card card-peak">
+      <div class="card-top">
+        <span class="card-num">05</span>
+        <span class="card-icon">↑</span>
+      </div>
+      <div class="card-visual" style="flex-direction:column;gap:0">
+        <div class="peak-num" id="peakNum">—</div>
+        <div class="peak-label" id="peakLabel">Recovery</div>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Peak</div>
+          <div class="card-sub">Daily readiness</div>
+        </div>
+        <div class="card-arrow">→</div>
+      </div>
+    </a>
+
+    <!-- 06 · Finance -->
+    <a href="finance.html" class="card card-finance">
+      <div class="card-top">
+        <span class="card-num">06</span>
+        <span class="card-icon">↗</span>
+      </div>
+      <div class="card-visual">
+        <div class="candles" id="candles"></div>
+      </div>
+      <div class="card-bottom">
+        <div>
+          <div class="card-title">Finance</div>
+          <div class="card-sub">Net worth, subscriptions</div>
+        </div>
+        <div class="card-arrow" style="border-color:rgba(224,118,72,0.22)">→</div>
+      </div>
+    </a>
+
+  </div><!-- .grid -->
+</div><!-- .wrap -->
+
+<script>
+(function () {
+  // ── Greeting ──────────────────────────────────────────────
+  const h = new Date().getHours();
+  const word = h < 5 ? 'Good night' : h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 22 ? 'Good evening' : 'Good night';
+  document.getElementById('greeting').innerHTML = word + ', <em>Johnny</em>';
+
+  // ── Date ──────────────────────────────────────────────────
+  const now  = new Date();
+  const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MONS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('headerDate').textContent =
+    DAYS[now.getDay()].toUpperCase() + ', ' + MONS[now.getMonth()].toUpperCase() + ' ' + now.getDate();
+
+  // ── Peak / recovery score ──────────────────────────────────
+  try {
+    const hd = JSON.parse(localStorage.getItem('patron_health_v1') || 'null');
+    if (hd && typeof hd.recovery === 'number' && hd.recovery > 0) {
+      const el = document.getElementById('peakNum');
+      el.textContent = Math.round(hd.recovery);
+      if      (hd.recovery >= 67) el.style.color = '#6be3a4';
+      else if (hd.recovery >= 34) el.style.color = '#f2c063';
+      else                         el.style.color = '#ff6b6b';
+    }
+  } catch (e) {}
+
+  // ── Goals dot grid ─────────────────────────────────────────
+  try {
+    const d = new Date();
+    const key = 'goals:' + d.toLocaleDateString('en-CA');
+    const goals = JSON.parse(localStorage.getItem(key) || '[]');
+    const done  = goals.filter(g => g.done).length;
+    const total = goals.length;
+    const grid  = document.getElementById('goalsGrid');
+    const sub   = document.getElementById('goalsSub');
+
+    if (total > 0) {
+      sub.textContent = done + ' / ' + total + ' complete';
+      const cells = 15;
+      for (let i = 0; i < cells; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'g-dot ' + (i < done ? 'done' : i < total ? 'pending' : 'empty');
+        grid.appendChild(dot);
+      }
+    } else {
+      // placeholder dots (empty state)
+      for (let i = 0; i < 15; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'g-dot empty';
+        grid.appendChild(dot);
+      }
+    }
+  } catch (e) {
+    for (let i = 0; i < 15; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'g-dot empty';
+      document.getElementById('goalsGrid').appendChild(dot);
+    }
+  }
+
+  // ── Candlestick chart (decorative) ─────────────────────────
+  const heights = [38, 52, 32, 65, 44, 72, 48, 58, 40, 80, 55, 70, 60, 85, 68];
+  const ups     = [1,  1,  0,  1,  0,  1,  0,  1,  0,  1,  0,  1,  1,  1,  1 ];
+  const wrap    = document.getElementById('candles');
+  heights.forEach((ht, i) => {
+    const c = document.createElement('div');
+    c.className = 'candle ' + (ups[i] ? 'up' : 'dn');
+    c.style.height = ht + '%';
+    wrap.appendChild(c);
+  });
+})();
+</script>
+</body>
+</html>

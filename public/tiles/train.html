@@ -10,7 +10,7 @@
     chart    (Episode 1, progressive overload)  <!-- @episode-start:chart -->  ...  <!-- @episode-end:chart -->
     logger   (Episode 2, the workout logger)    <!-- @episode-start:logger -->  ...  <!-- @episode-end:logger -->
     library  (Episode 3, the exercise library)  <!-- @episode-start:library -->  ...  <!-- @episode-end:library -->
-  No build step, no server, no external CDN. State lives in localStorage.
+  No build step, no server, no external CDN. State lives in VStore.
   Pure black, mint accent, Inter. Open it in a browser and it just works.
 -->
 <style>
@@ -831,6 +831,31 @@
 <!-- @episode-end:rest-timer -->
 
 <script>
+let MEM = {};
+let __t = null;
+const __hasLS = (function(){ try { window.localStorage.setItem('__vt','1'); window.localStorage.removeItem('__vt'); return true; } catch(e){ return false; } })();
+function __persist(){ clearTimeout(__t); __t = setTimeout(__flush, 400); }
+function __flush(){
+  if (window.Vitality && window.Vitality.save) { try { window.Vitality.save(MEM); } catch(e){} }
+  else if (__hasLS) { try { window.localStorage.setItem('vitality.train.tile', JSON.stringify(MEM)); } catch(e){} }
+}
+addEventListener('pagehide', __flush);
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden') __flush(); });
+const VStore = {
+  getItem: function(k){ return Object.prototype.hasOwnProperty.call(MEM, k) ? MEM[k] : null },
+  setItem: function(k, v){ MEM[k] = String(v); __persist(); },
+  removeItem: function(k){ delete MEM[k]; __persist(); },
+};
+async function __loadMem(){
+  if (window.Vitality && window.Vitality.load) {
+    try { const d = await window.Vitality.load(); if (d && typeof d === 'object' && !Array.isArray(d)) return d; } catch(e){}
+    return {};
+  }
+  if (__hasLS) { try { const raw = window.localStorage.getItem('vitality.train.tile'); if (raw){ const o = JSON.parse(raw); if (o && typeof o === 'object') return o; } } catch(e){} }
+  return {};
+}
+async function __bootTile(){
+
   // ====================================================================
   //  THE LIVING LOGGER. Three features grown one episode at a time, sharing
   //  one localStorage store and one render loop:
@@ -889,10 +914,10 @@
   // single "Day 1"; else seed a real Push/Pull/Legs/Rest split. It never opens blank.
   function loadLog(){
     DATA = null;
-    try { const raw = localStorage.getItem(STORE2); if (raw){ const d = JSON.parse(raw); if (d && Array.isArray(d.days) && d.days.length) DATA = d; } } catch(e){}
+    try { const raw = VStore.getItem(STORE2); if (raw){ const d = JSON.parse(raw); if (d && Array.isArray(d.days) && d.days.length) DATA = d; } } catch(e){}
     if (!DATA){
       try {
-        const rawOld = localStorage.getItem(STORE);
+        const rawOld = VStore.getItem(STORE);
         if (rawOld){ const a = JSON.parse(rawOld); if (Array.isArray(a) && a.length){ const id = uid(); DATA = { days: [{ id, name: 'Day 1', lifts: a }], activeDayId: id }; } }
       } catch(e){}
     }
@@ -917,7 +942,7 @@
     saveLog();
     return LIFTS;
   }
-  function saveLog(){ try { localStorage.setItem(STORE2, JSON.stringify(DATA)); } catch(e){} }
+  function saveLog(){ try { VStore.setItem(STORE2, JSON.stringify(DATA)); } catch(e){} }
   function getLift(id){ return LIFTS.find(l => l.id === id); }
   function updateLift(id, patch){
     const lift = getLift(id); if (!lift) return;
@@ -1028,7 +1053,7 @@
   // number you typed back into kg. Flip the unit and every weight re-renders, so
   // no stored value ever drifts.
   let UNIT = 'kg';
-  try { const u = localStorage.getItem('vitality.logger.unit'); if (u === 'lb' || u === 'kg') UNIT = u; } catch(e){}
+  try { const u = VStore.getItem('vitality.logger.unit'); if (u === 'lb' || u === 'kg') UNIT = u; } catch(e){}
   const LB = 0.45359237;
   const wDisp = kg => UNIT === 'lb' ? Math.round(kg / LB * 2) / 2 : Math.round(kg * 100) / 100;
   const wKg   = v  => UNIT === 'lb' ? Math.round(v * LB * 1000) / 1000 : v;
@@ -1036,7 +1061,7 @@
   const nudgeDefault = () => UNIT === 'lb' ? 5 : 2.5;
   const nudgeStep = () => UNIT === 'lb' ? 2.5 : 1.25;
   function paintUnitToggle(){ document.querySelectorAll('.unit-opt').forEach(b => b.classList.toggle('on', b.dataset.u === UNIT)); }
-  function setUnit(u){ if (u !== 'kg' && u !== 'lb') return; UNIT = u; try { localStorage.setItem('vitality.logger.unit', u); } catch(e){} paintUnitToggle(); render(); }
+  function setUnit(u){ if (u !== 'kg' && u !== 'lb') return; UNIT = u; try { VStore.setItem('vitality.logger.unit', u); } catch(e){} paintUnitToggle(); render(); }
 
   loadLog();
 
@@ -1846,7 +1871,7 @@
     LIFTS.forEach(l => { if (!l.hidden && (l.libKey === e.key || l.name === e.name)) l.hidden = true; });
     saveLog(); render();
   }
-  function clearOverloadStore(id){ try { localStorage.removeItem('vitality.overload.' + id + '.v3'); } catch(e){} }
+  function clearOverloadStore(id){ try { VStore.removeItem('vitality.overload.' + id + '.v3'); } catch(e){} }
   function swapForLibrary(entry){
     if (!libSwapTarget) return;
     const dup = LIFTS.find(l => !l.hidden && l.id !== libSwapTarget.id && (l.libKey === entry.key || l.name === entry.name));
@@ -2531,10 +2556,10 @@
   }
   function resetEverything(){
     try {
-      localStorage.removeItem(STORE);
-      localStorage.removeItem(STORE2);
-      localStorage.removeItem('vitality.logger.unit');
-      Object.keys(localStorage).filter(k => k.indexOf('vitality.overload.') === 0).forEach(k => localStorage.removeItem(k));
+      VStore.removeItem(STORE);
+      VStore.removeItem(STORE2);
+      VStore.removeItem('vitality.logger.unit');
+      Object.keys(localStorage).filter(k => k.indexOf('vitality.overload.') === 0).forEach(k => VStore.removeItem(k));
     } catch(e){}
     UNIT = 'kg';
     // Full circle: a reset returns to the first-run chooser, NEVER to seeded
@@ -2597,6 +2622,9 @@
     document.body.appendChild(tag);
   }
   // @episode-end:session
+
+}
+__loadMem().then(function(m){ MEM = m; __bootTile(); });
 </script>
 
 <style>
