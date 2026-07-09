@@ -1417,9 +1417,10 @@ document.addEventListener('dragleave',function(e){const d=e.target.closest&&e.ta
 document.addEventListener('drop',function(e){const d=e.target.closest&&e.target.closest('#drop');if(!d)return;e.preventDefault();d.classList.remove('dropZoneActive');const f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f)handleImportFile(f);});
 
 /* ===================== INIT ===================== */
+window.onerror=function(msg,src,line){const b=document.getElementById('js-test');if(b)b.textContent='ERR L'+line+': '+msg;return true;};
 spawnParticles();
-processRenewals();
-render();
+try{processRenewals();}catch(e){const b=document.getElementById('js-test');if(b)b.textContent='processRenewals: '+e.message;}
+try{render();}catch(e){const b=document.getElementById('js-test');if(b)b.textContent='render: '+e.message;}
 fetchRates();
 refreshCryptoQuotes();
 if(keys.finnhub)refreshStockQuotes();
