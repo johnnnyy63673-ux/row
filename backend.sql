@@ -117,3 +117,27 @@ do $$ begin
   end if;
 end $$;
 -- @episode-end:stack
+
+
+-- @episode-start:subs
+-- Episode 3 (the subscription radar)
+-- One row per user: the whole radar state travels as one document, same
+-- pattern as the stack. Additive, safe to re-run.
+create table if not exists subscription_radar (
+  user_id    uuid primary key references auth.users(id) on delete cascade,
+  currency   text not null default '$',
+  subs       jsonb not null default '[]',  -- [{ id, name, amount, period, renewal, trialEnds, manageUrl, prevAmount, priceChangedAt }]
+  updated_at timestamptz not null default now()
+);
+
+alter table subscription_radar enable row level security;
+
+do $$ begin
+  if not exists (select 1 from pg_policies where tablename = 'subscription_radar' and policyname = 'read own radar') then
+    create policy "read own radar"   on subscription_radar for select using (auth.uid() = user_id);
+    create policy "insert own radar" on subscription_radar for insert with check (auth.uid() = user_id);
+    create policy "update own radar" on subscription_radar for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+    create policy "delete own radar" on subscription_radar for delete using (auth.uid() = user_id);
+  end if;
+end $$;
+-- @episode-end:subs

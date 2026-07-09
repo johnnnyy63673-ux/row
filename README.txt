@@ -5,7 +5,7 @@ THE ARSENAL
    backend.sql sits beside them. (.claude is a hidden folder: press
    Cmd+Shift+. in Finder to see it. It is there.)
 2. Open Claude Code in that repo.
-3. Run /logger (workout) or /fuel (the stack)
+3. Run /logger (workout), /fuel (the stack) or /finance (the radar)
 
 That is the whole install. The exact tested code, every brick,
 wired to one saved store. Re-download after each episode: the same
