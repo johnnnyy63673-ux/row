@@ -630,6 +630,8 @@ import * as THREE from 'three';
 
 <script>
 'use strict';
+// Polyfill localStorage for sandboxed iframe contexts where it throws SecurityError
+try{localStorage.getItem('__v');}catch(e){(function(){var s={};window.localStorage={getItem:function(k){return k in s?s[k]:null;},setItem:function(k,v){s[k]=String(v);},removeItem:function(k){delete s[k];}};})();}
 /* =========================================================================
  * Finance â Vitality standalone (single file). Ported from the live
  * /app/finance module. All data starts at zero. Persists to localStorage.
